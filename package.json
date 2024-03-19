@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "My Electron application description",
   "main": ".webpack/main",
+  "expressPort": 3131,
   "scripts": {
     "start": "npm i && electron-forge start",
     "test": "node --napi-modules ./test/test_binding.js",
@@ -39,7 +40,9 @@
   },
   "license": "MIT",
   "dependencies": {
+    "axios": "^1.6.8",
     "bindings": "^1.5.0",
+    "cors": "^2.8.5",
     "electron-squirrel-startup": "^1.0.0",
     "express": "^4.18.3",
     "node-addon-api": "^8.0.0",

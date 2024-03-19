@@ -2,6 +2,17 @@
 #include <sstream>
 #include <iostream>
 
+#if defined(__linux__)
+  #define OS_NAME "Linux"
+#elif defined(__APPLE__)
+  #define OS_NAME "macOS"
+#elif defined(_WIN32) || defined(_WIN64)
+  #define OS_NAME "Windows"
+#else
+  #define OS_NAME "Unknown"
+#endif
+
+
 using namespace Napi;
 
 // Constructor - expects the name of the greeter, storing it as a member variable
@@ -46,14 +57,30 @@ Napi::Value ObjectWrapDemo::Greet(const Napi::CallbackInfo& info) {
   return Napi::String::New(env, ss.str());
 }
 
+Napi::Value ObjectWrapDemo::GetInfo(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
+
+  if (info.Length() != 0) {
+    Napi::TypeError::New(env, "Wrong number of arguments")
+      .ThrowAsJavaScriptException();
+    return env.Null();
+  }
+
+  std::stringstream ss;
+  ss << "I am " << this -> _greeterName << ", an N-API server running on the " << OS_NAME << " operating system." << std::endl;
+  return Napi::String::New(env, ss.str());
+}
+
 // defines the ObjectWrapDemo class for use in javascript
 // - registers the `greet` method as an instance method of the class
+// - registers the `info` method as an instance method of the class
 Napi::Function ObjectWrapDemo::GetClass(Napi::Env env) {
   return DefineClass(
       env,
       "ObjectWrapDemo",
       {
-          ObjectWrapDemo::InstanceMethod("greet", &ObjectWrapDemo::Greet),
+        ObjectWrapDemo::InstanceMethod("greet", &ObjectWrapDemo::Greet),
+        ObjectWrapDemo::InstanceMethod("info", &ObjectWrapDemo::GetInfo),
       });
 }
 

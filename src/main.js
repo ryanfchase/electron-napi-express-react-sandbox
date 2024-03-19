@@ -1,5 +1,11 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
+const { app, BrowserWindow, ipcMain } = require('electron');
+const { spawn } = require('node:child_process');
+const path = require('node:path');
+const { name, expressPort } = require('../package.json');
+
+const appName = app.getPath("exe");
+const expressAppUrl = `http://127.0.0.1:${expressPort}`;
+let mainWindow;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -7,8 +13,13 @@ if (require('electron-squirrel-startup')) {
 }
 
 const createWindow = () => {
+
+  // spawn express app as a process
+  const expressAppProcess = spawn(appName, [expressPath], { env: { ELECTRON_RUN_AS_NODE: "1" } });
+  [expressAppProcess.stdout, expressAppProcess.stderr].forEach(redirectOutput);
+
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -16,12 +27,40 @@ const createWindow = () => {
     },
   });
 
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+    expressAppProcess.kill();
+  });
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 };
+
+// deal with express server stdout and stderr
+const expressPath = appName.endsWith(`${name}.exe`)
+  ? path.join("./resources/app.asar", "./src/express-app.js")
+  : "./src/express-app.js";
+
+function stripAnsiColors(text) {
+  return text.replace(
+    /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
+    ""
+  );
+}
+
+function redirectOutput(stream) {
+  stream.on("data", (data) => {
+    if (!mainWindow) return;
+    data.toString().split("\n").forEach((line) => {
+      console.log("\tline: ", line)
+      if (line !== "") {
+        mainWindow?.webContents?.send("server-log-entry", stripAnsiColors(line));
+      }
+    });
+  });
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

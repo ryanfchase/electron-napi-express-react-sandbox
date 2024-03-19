@@ -31,7 +31,13 @@ module.exports = {
     },
     {
       name: '@electron-forge/plugin-webpack',
+      // devContentSecurityPolicy: "default-src 'self' 'unsafe-eval' 'unsafe-inline' http://localhost:* ws://localhost:*;",
+      // devContentSecurityPolicy: "default-src 'self' data: gap: http://localhost:3131 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *;**script-src 'self' http://localhost:3131 'unsafe-inline' 'unsafe-eval';** ",
+      // devContentSecurityPolicy: "default-src * self blob: data: gap:; style-src * self 'unsafe-inline' blob: data: gap:; script-src * 'self' 'unsafe-eval' 'unsafe-inline' blob: data: gap:; object-src * 'self' blob: data: gap:; img-src * self 'unsafe-inline' blob: data: gap:; connect-src self * 'unsafe-inline' blob: data: gap:; frame-src * self blob: data: gap:;",
+      // devContentSecurityPolicy: "default-src 'none'; script-src 'unsafe-eval'; script-src-elem 'self'; img-src *; style-src 'self' 'unsafe-inline'; connect-src 'self';",
+      // devContentSecurityPolicy: 'default-src \'self\' \'unsafe-inline\' data:; script-src \'self\' \'unsafe-eval\' \'unsafe-inline\' data:',
       config: {
+        devContentSecurityPolicy: "connect-src 'self' http://localhost:3131 blob: data: gap:",
         mainConfig: './webpack.main.config.js',
         renderer: {
           config: './webpack.renderer.config.js',

@@ -6,6 +6,7 @@ class ObjectWrapDemo : public Napi::ObjectWrap<ObjectWrapDemo> {
  public:
   ObjectWrapDemo(const Napi::CallbackInfo&);
   Napi::Value Greet(const Napi::CallbackInfo&);
+  Napi::Value GetInfo(const Napi::CallbackInfo&);
 
   static Napi::Function GetClass(Napi::Env);
 
