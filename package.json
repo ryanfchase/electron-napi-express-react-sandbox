@@ -25,6 +25,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.3.0",
     "@electron-forge/plugin-fuses": "^7.2.0",
     "@electron-forge/plugin-webpack": "^7.3.0",
+    "@electron-forge/publisher-github": "^7.3.0",
     "@electron/fuses": "^1.7.0",
     "@vercel/webpack-asset-relocator-loader": "1.7.3",
     "babel-loader": "^9.1.3",

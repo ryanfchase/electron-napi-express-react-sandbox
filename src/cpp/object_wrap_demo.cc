@@ -12,7 +12,6 @@
   #define OS_NAME "Unknown"
 #endif
 
-
 using namespace Napi;
 
 // Constructor - expects the name of the greeter, storing it as a member variable

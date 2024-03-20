@@ -14,9 +14,14 @@ if (require('electron-squirrel-startup')) {
 
 const createWindow = () => {
 
+  console.log("Spawning express on: ", expressPath);
   // spawn express app as a process
-  const expressAppProcess = spawn(appName, [expressPath], { env: { ELECTRON_RUN_AS_NODE: "1" } });
+  const expressAppProcess = spawn(appName, [expressPath], { env: { ELECTRON_RUN_AS_NODE: "1", DISPLAY: "127.0.0.1:0.0" } });
   [expressAppProcess.stdout, expressAppProcess.stderr].forEach(redirectOutput);
+
+  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+  console.log("Spawned process: ", JSON.stringify(expressAppProcess));
+  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -31,6 +36,7 @@ const createWindow = () => {
     mainWindow = null;
     expressAppProcess.kill();
   });
+
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
@@ -65,7 +71,13 @@ function redirectOutput(stream) {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+// app.on('ready', createWindow);
+app.whenReady().then(() => {
+  console.log("ARE YOU READY?????????????????")
+  console.log(JSON.stringify(mainWindow));
+  console.log("??????????????????????????")
+  createWindow();
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits

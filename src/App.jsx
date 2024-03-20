@@ -19,7 +19,6 @@ function App() {
       console.error("Error: ", error);
       setResponse(error);
     })
-
   };
 
   const handleGreetUser = () => {
