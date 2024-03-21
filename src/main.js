@@ -5,6 +5,7 @@ const { name, expressPort } = require('../package.json');
 
 const appName = app.getPath("exe");
 const expressAppUrl = `http://127.0.0.1:${expressPort}`;
+const WINDOWS_OS = appName.endsWith(`${name}.exe`);
 let mainWindow;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -13,9 +14,10 @@ if (require('electron-squirrel-startup')) {
 }
 
 // deal with express server stdout and stderr
-const expressPath = appName.endsWith(`${name}.exe`)
-  ? path.join("./resources/app.asar", "./src/express-app.js")
-  : "./src/express-app.js";
+const expressPath = WINDOWS_OS
+  // ? path.join(__dirname, "./express-app.js")
+  ? path.resolve("resources/express-app.js")
+  : "./server/express-app.js";
 
 function stripAnsiColors(text) {
   return text.replace(
@@ -42,10 +44,22 @@ const createWindow = () => {
   console.log('dirname: ', __dirname)
   console.log('appName: ', appName)
   console.log('name: ', name)
+  console.log('main_window_webpack_entry:', MAIN_WINDOW_WEBPACK_ENTRY)
+  console.log('main_window_preload_webpack_entry:', MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY)
+  console.log('possible express-app-loc: ', expressPath)
   console.log('appName ends with {name}.exe?: ', appName.endsWith(`${name}.exe`))
   // spawn express app as a process
-  const expressAppProcess = spawn('node', [expressPath], { env: { ELECTRON_RUN_AS_NODE: "1", DISPLAY: "127.0.0.1:0.0" } });
+  const expressAppProcess = WINDOWS_OS ?
+    spawn('node', [expressPath], { env: { ELECTRON_RUN_AS_NODE: "1" }, shell: true }) :
+    spawn('node', [expressPath], { env: { ELECTRON_RUN_AS_NODE: "1", DISPLAY: "127.0.0.1:0.0" } });
+
+  const otherProcess = WINDOWS_OS ?
+    // spawn('dir', [__dirname], { shell: true }) : // wasn't working...
+    spawn('dir', [path.normalize(__dirname)], { shell: true }) :
+    spawn('ls' ['-al', '.'], { env: {ELECTRON_RUN_AS_NODE: "1" }});
+
   [expressAppProcess.stdout, expressAppProcess.stderr].forEach(redirectOutput);
+  [otherProcess.stdout, otherProcess.stderr].forEach(redirectOutput);
 
   console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   console.log("Spawned process: ", JSON.stringify(expressAppProcess));
@@ -63,6 +77,7 @@ const createWindow = () => {
   mainWindow.on("closed", () => {
     mainWindow = null;
     expressAppProcess.kill();
+    otherProcess.kill();
   });
 
   // and load the index.html of the app.
