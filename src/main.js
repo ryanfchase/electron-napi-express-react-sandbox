@@ -12,38 +12,6 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
-const createWindow = () => {
-
-  console.log("Spawning express on: ", expressPath);
-  // spawn express app as a process
-  const expressAppProcess = spawn(appName, [expressPath], { env: { ELECTRON_RUN_AS_NODE: "1", DISPLAY: "127.0.0.1:0.0" } });
-  [expressAppProcess.stdout, expressAppProcess.stderr].forEach(redirectOutput);
-
-  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  console.log("Spawned process: ", JSON.stringify(expressAppProcess));
-  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
-    },
-  });
-
-  mainWindow.on("closed", () => {
-    mainWindow = null;
-    expressAppProcess.kill();
-  });
-
-  // and load the index.html of the app.
-  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
-};
-
 // deal with express server stdout and stderr
 const expressPath = appName.endsWith(`${name}.exe`)
   ? path.join("./resources/app.asar", "./src/express-app.js")
@@ -67,6 +35,42 @@ function redirectOutput(stream) {
     });
   });
 }
+
+const createWindow = () => {
+  console.log("Spawning express on: ", expressPath);
+  console.log('other info about paths...')
+  console.log('dirname: ', __dirname)
+  console.log('appName: ', appName)
+  console.log('name: ', name)
+  console.log('appName ends with {name}.exe?: ', appName.endsWith(`${name}.exe`))
+  // spawn express app as a process
+  const expressAppProcess = spawn('node', [expressPath], { env: { ELECTRON_RUN_AS_NODE: "1", DISPLAY: "127.0.0.1:0.0" } });
+  [expressAppProcess.stdout, expressAppProcess.stderr].forEach(redirectOutput);
+
+  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+  console.log("Spawned process: ", JSON.stringify(expressAppProcess));
+  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+  // Create the browser window.
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+    },
+  });
+
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+    // expressAppProcess.kill();
+  });
+
+  // and load the index.html of the app.
+  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+
+  // Open the DevTools.
+  mainWindow.webContents.openDevTools();
+};
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
