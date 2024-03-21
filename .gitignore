@@ -93,3 +93,6 @@ out/
 
 # Gyp Build Artifacts
 build/
+
+# Bin
+bin/

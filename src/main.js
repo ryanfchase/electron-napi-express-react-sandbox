@@ -62,7 +62,7 @@ const createWindow = () => {
 
   mainWindow.on("closed", () => {
     mainWindow = null;
-    // expressAppProcess.kill();
+    expressAppProcess.kill();
   });
 
   // and load the index.html of the app.
@@ -77,9 +77,6 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 // app.on('ready', createWindow);
 app.whenReady().then(() => {
-  console.log("ARE YOU READY?????????????????")
-  console.log(JSON.stringify(mainWindow));
-  console.log("??????????????????????????")
   createWindow();
 });
 

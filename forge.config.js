@@ -15,6 +15,7 @@ module.exports = {
       name: '@electron-forge/maker-zip',
       platforms: ['darwin'],
     },
+    // possibly this can go back in, it was just slowing down my make time in wsl2
     // {
     //   name: '@electron-forge/maker-deb',
     //   config: {},
@@ -62,3 +63,12 @@ module.exports = {
     }),
   ],
 };
+
+// Some other info...
+
+/*
+How do I do virtual routing?
+If you want to use something like react-router to do virtual routing in your app, you will need to ensure you use a
+history method that is not based on the browser history APIs. Browser history will work in development but not in production,
+as your code will be loaded from the filesystem, not a web server. In the react-router case, you should use the MemoryRouter to make everything work.
+*/
