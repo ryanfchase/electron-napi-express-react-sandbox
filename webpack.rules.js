@@ -6,6 +6,8 @@ module.exports = [
     test: /native_modules[/\\].+\.node$/,
     use: 'node-loader',
   },
+  // Put your webpack loader rules in this array.  This is where you would put
+  // your ts-loader configuration for instance:
   {
     test: /[/\\]node_modules[/\\].+\.(m?js|node)$/,
     parser: { amd: false },
@@ -16,9 +18,7 @@ module.exports = [
       },
     },
   },
-  // Put your webpack loader rules in this array.  This is where you would put
-  // your ts-loader configuration for instance:
-    /**
+  /**
    * JSX Loader
    */
   {

@@ -1,4 +1,4 @@
-// const CopyPlugin = require("copy-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   /**
@@ -10,12 +10,13 @@ module.exports = {
   module: {
     rules: require('./webpack.rules'),
   },
-  /*plugins: [
+  plugins: [
+    /*
     new CopyPlugin({
       patterns: [
-        "./server/express-app.js"
+        { from: "./server/", to: "./server/" },
       ]
     }),
+    */
   ],
-  */
 };

@@ -4,7 +4,6 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
-    extraResources: "./server/express-app.js",
   },
   rebuildConfig: {},
   makers: [

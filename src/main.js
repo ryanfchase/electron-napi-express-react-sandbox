@@ -1,70 +1,19 @@
+require('./express-app.js');
 const { app, BrowserWindow, ipcMain } = require('electron');
-const { spawn } = require('node:child_process');
 const path = require('node:path');
 const { name, expressPort } = require('../package.json');
 
 const appName = app.getPath("exe");
 const expressAppUrl = `http://127.0.0.1:${expressPort}`;
 const WINDOWS_OS = appName.endsWith(`${name}.exe`);
-let mainWindow;
+let mainWindow, backgroundWindow;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
-// deal with express server stdout and stderr
-const expressPath = WINDOWS_OS
-  // ? path.join(__dirname, "./express-app.js")
-  ? path.resolve("resources/express-app.js")
-  : "./server/express-app.js";
-
-function stripAnsiColors(text) {
-  return text.replace(
-    /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
-    ""
-  );
-}
-
-function redirectOutput(stream) {
-  stream.on("data", (data) => {
-    if (!mainWindow) return;
-    data.toString().split("\n").forEach((line) => {
-      console.log("\tline: ", line)
-      if (line !== "") {
-        mainWindow?.webContents?.send("server-log-entry", stripAnsiColors(line));
-      }
-    });
-  });
-}
-
 const createWindow = () => {
-  console.log("Spawning express on: ", expressPath);
-  console.log('other info about paths...')
-  console.log('dirname: ', __dirname)
-  console.log('appName: ', appName)
-  console.log('name: ', name)
-  console.log('main_window_webpack_entry:', MAIN_WINDOW_WEBPACK_ENTRY)
-  console.log('main_window_preload_webpack_entry:', MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY)
-  console.log('possible express-app-loc: ', expressPath)
-  console.log('appName ends with {name}.exe?: ', appName.endsWith(`${name}.exe`))
-  // spawn express app as a process
-  const expressAppProcess = WINDOWS_OS ?
-    spawn('node', [expressPath], { env: { ELECTRON_RUN_AS_NODE: "1" }, shell: true }) :
-    spawn('node', [expressPath], { env: { ELECTRON_RUN_AS_NODE: "1", DISPLAY: "127.0.0.1:0.0" } });
-
-  const otherProcess = WINDOWS_OS ?
-    // spawn('dir', [__dirname], { shell: true }) : // wasn't working...
-    spawn('dir', [path.normalize(__dirname)], { shell: true }) :
-    spawn('ls' ['-al', '.'], { env: {ELECTRON_RUN_AS_NODE: "1" }});
-
-  [expressAppProcess.stdout, expressAppProcess.stderr].forEach(redirectOutput);
-  [otherProcess.stdout, otherProcess.stderr].forEach(redirectOutput);
-
-  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  console.log("Spawned process: ", JSON.stringify(expressAppProcess));
-  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 800,
@@ -76,8 +25,6 @@ const createWindow = () => {
 
   mainWindow.on("closed", () => {
     mainWindow = null;
-    expressAppProcess.kill();
-    otherProcess.kill();
   });
 
   // and load the index.html of the app.
@@ -111,6 +58,3 @@ app.on('activate', () => {
     createWindow();
   }
 });
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.

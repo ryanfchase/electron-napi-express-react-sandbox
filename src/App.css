@@ -1,0 +1,53 @@
+body {
+  all: unset;
+}
+
+#inner-container {
+  border: 0.1em solid red; /* temp -- to be removed */
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  font-family: Open Sans,Arial,Helvetica,sans-serif;
+}
+
+#inner-container * {
+  border: 0.1em dotted grey;
+}
+
+#navbar {
+  min-height: 4.75em;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border: 0.1em solid #e4e6e7;
+}
+
+.celestron-icon-small {
+  min-height: 2em;
+  max-height: 4em;
+}
+
+.celestron-selected {
+  background-color: #fd8204;
+}
+
+.celestron-unselected {
+  color: #fff;
+  background-color: #333e48;
+}
+
+.celestron-background {
+  background-color: #fafafa;
+}
+
+.celestron-light-feature {
+  background-color: #e4e8ea;
+}
+
+.celestron-light-textbox {
+  background-color: #f6f7f9;
+}
+
+.celestron-background-gradient {
+  background-image: linear-gradient(to top right,#0000009e,transparent);
+}
