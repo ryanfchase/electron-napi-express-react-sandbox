@@ -2,16 +2,99 @@ body {
   all: unset;
 }
 
+* {
+  letter-spacing: -0.03em;
+}
+
+.loading-gif-container {
+  margin: 2em 0;
+}
+.loading-gif {
+  max-height: 2em;
+}
+
 #inner-container {
-  border: 0.1em solid red; /* temp -- to be removed */
+  /* border: 0.1em solid red; temp -- to be removed */
   display: flex;
   flex-direction: column;
   background: #fff;
   font-family: Open Sans,Arial,Helvetica,sans-serif;
 }
 
-#inner-container * {
+/* #inner-container * {
   border: 0.1em dotted grey;
+} */
+
+.celestron-control-button {
+  cursor: pointer;
+  color: #fff;
+  background-color: #333e48;
+  border: 0.15em solid #fd8204;
+  border-radius: 0.333em;
+  user-select: none;
+  width: fit-content;
+  padding: 0.3em 1em;
+  letter-spacing: normal;
+/* rgb(51, 62, 72) */
+}
+
+.celestron-control-button:hover {
+  background-color: rgb(51, 62, 72, 0.8);
+}
+.celestron-control-button:active {
+  background-color: rgb(51, 62, 72, 1.4);
+}
+
+.celestron-button {
+  cursor: pointer;
+  background-color: #fff;
+  border: 0.15em solid #fd8204;
+  border-radius: 0.333em;
+  user-select: none;
+  width: fit-content;
+  padding: 0.3em 1em;
+  color: #8B4513
+}
+
+.celestron-button:hover {
+  background-color: rgba(253, 130, 4, 0.5);
+}
+
+.celestron-button:hover:active {
+  background-color: rgba(253, 130, 4, 0.75);
+  border: 0.2em solid #fd8204;
+}
+
+.celestron-button-small {
+  cursor: pointer;
+  background-color: #fff;
+  border: 1px solid #707070;
+  color: #707070;
+  border-radius: 0.333em;
+  user-select: none;
+  width: fit-content;
+  padding: 3px 5px;
+  margin-left: 1em;
+}
+
+.celestron-button-small:active {
+  background-color: #e4e8ea;
+}
+
+.clickable-icon {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  border-radius: 0.75em;
+  padding: 0.25em;
+}
+
+.clickable-icon:hover {
+  background-color: rgba(253, 130, 4, 0.5);
+}
+
+.clickable-icon:hover:active {
+  background-color: rgba(253, 130, 4, 0.75);
 }
 
 #navbar {
@@ -19,9 +102,122 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
+  user-select: none;
   border: 0.1em solid #e4e6e7;
 }
 
+.navbar-item {
+  min-width: 8em;
+}
+
+.navbar-title {
+  text-align: center;
+  font-weight: lighter;
+  font-size: large;
+  text-transform: uppercase;
+  color: #333;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+
+}
+
+.navbar-info {
+  text-align: center;
+}
+
+#wifi-tool-control-bar {
+  border: 0.1em solid #e4e6e7;
+  min-height: 2em;
+}
+
+.centered-controls {
+  padding: 1em 8em;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.seek-device-control-status {
+  margin-left: 3em;
+}
+
+#wifi-device-details {
+  display: flex;
+  flex-direction: column;
+  /* padding: 0.5em 2.4em 2em; /*small screen size */
+  padding: 0.5em 8em 3em; /*medium screen size*/
+  align-items: center;
+}
+
+.device-detail {
+  text-transform: lowercase;
+  color: #707070;
+}
+
+.device-name {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 2.5em;
+  padding-left: 12em;
+}
+
+.device-icon {
+  display: flex;
+  align-items: center;
+  border-radius: 0.333em;
+  padding: .25em;
+  width: fit-content;
+  text-align: -webkit-right;
+}
+
+.device-title {
+  font-weight: bold;
+  font-size: 2em;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+}
+
+/* Tables */
+
+.device-name-table {
+  width: 100%;
+  table-layout: fixed;
+  margin: 1em 0;
+}
+
+.credential-table {
+  width: 100%;
+  table-layout: fixed;
+  margin: 1em 0;
+}
+
+.first-col {
+  padding-right: 1.25em;
+  text-align: -webkit-right;
+}
+
+.credential-title {
+  text-wrap: pretty;
+  display: block;
+  width: 100%;
+  text-align: right;
+}
+
+.credential-input {
+  padding: 3px 5px;
+  letter-spacing: normal;
+}
+
+.credential-input-hidden {
+  letter-spacing: 3px;
+}
+
+.final-submit-section {
+  margin-top: 2em;
+}
+/* Icons and Backgrounds  */
 .celestron-icon-small {
   min-height: 2em;
   max-height: 4em;
@@ -50,4 +246,44 @@ body {
 
 .celestron-background-gradient {
   background-image: linear-gradient(to top right,#0000009e,transparent);
+}
+
+/* Pre styles */
+.pre-container {
+  display: flex;
+  align-items: baseline;
+  background-color: #f4f4f4; /* Light gray background */
+  border: 1px solid #ccc; /* Thin border */
+  border-radius: 5px; /* Rounded corners */
+  padding: 20px; /* Padding around the content */
+  overflow: auto; /* Enable scrolling if content overflows */
+  font-family: 'Arial', sans-serif; /* Font family */
+  font-size: 14px; /* Font size */
+  line-height: 1.5; /* Line height */
+  white-space: pre-wrap; /* Preserve whitespace */
+  max-height: 300px; /* Maximum height, adjust as needed */
+  width: 65%;
+  margin-left: 2em;
+}
+
+.pre-container code {
+  display: block; /* Ensure each line is displayed as a block */
+}
+
+.pre-container::before {
+  content: "status: ";
+  display: block;
+  font-weight: bold;
+}
+
+.pre-container.success {
+  border-color: #2ecc71; /* Green border for success status */
+}
+
+.pre-container.error {
+  border-color: #e74c3c; /* Red border for error status */
+}
+
+.pre-container.warning {
+  border-color: #f39c12; /* Orange border for warning status */
 }

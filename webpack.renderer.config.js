@@ -8,7 +8,7 @@ rules.push({
 
 rules.push(
   {
-    test: /\.(png|jpe?g|gif|avif|svg)$/i,
+    test: /\.(png|jpe?g|gif|avif|svg|webp)$/i,
     loader: 'file-loader',
     options: {
       outputPath: 'images'
