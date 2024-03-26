@@ -1,8 +1,8 @@
 {
-  "name": "golden-path",
-  "productName": "golden-path",
+  "name": "celestron-wifi-password-manager",
+  "productName": "Celestron Wifi Password Manager",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Celestron's wifi-module password configuration tool",
   "main": ".webpack/main",
   "expressPort": 3131,
   "scripts": {

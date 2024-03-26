@@ -17,9 +17,10 @@ const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 840,
-    height: 720,
-    title: "Celestron Wifi Tool",
-    icon: "../public/celestron-small.jpg",
+    height: 620,
+    title: "Celestron Wifi Password Manager",
+    icon: "./public/celestron-small.jpg",
+    autoHideMenuBar: true,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },

@@ -140,7 +140,7 @@ const testObject = [
 ];
 
 const content = {
-  headerText: "Celestron Wifi Tool",
+  headerText: "Celestron Wifi Password Manager",
   fakeNetworkName: testObject[0].networkName,
   fakeNetworkPassphrase: testObject[0].networkPassphrase,
   fakeModuleName: testObject[0].moduleName,

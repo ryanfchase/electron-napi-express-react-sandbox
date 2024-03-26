@@ -11,12 +11,11 @@ module.exports = {
     rules: require('./webpack.rules'),
   },
   plugins: [
-    /*
     new CopyPlugin({
       patterns: [
-        { from: "./server/", to: "./server/" },
+        "./public/celestron-small.jpg",
+        "./public/celestron-small-light.png",
       ]
     }),
-    */
   ],
 };
