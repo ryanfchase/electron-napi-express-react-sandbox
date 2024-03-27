@@ -2,7 +2,7 @@ const dgram = require('node:dgram');
 const winston = require('winston');
 
 const logger = winston.createLogger({
-  level: 'verbose',
+  level: 'info',
   format: winston.format.json(),
   // defaultMeta: { service: 'user-service' },
   transports: [

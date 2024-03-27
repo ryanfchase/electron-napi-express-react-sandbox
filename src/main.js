@@ -2,9 +2,18 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const { name, expressPort } = require('../package.json');
 const isDev = require('electron-is-dev');
 const electronSquirrelStartup = require('electron-squirrel-startup');
+const path = require('node:path');
+
+console.log("PATH INFO", {
+  dirname: __dirname,
+  home: app.getPath("home"),
+  userData: app.getPath("userData"),
+  preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+  mainWindow: MAIN_WINDOW_WEBPACK_ENTRY,
+})
 
 if (!isDev) {
-  require('./express-app.js');
+  require('./express-app.js')();
   console.log("Running in production");
 }
 else {
@@ -27,7 +36,7 @@ const createWindow = () => {
     width: 840,
     height: 620,
     title: "Celestron Wifi Password Manager",
-    icon: "./public/celestron-small.jpg",
+    icon: "./public/celestron-small.jpg", // not so sure about this
     autoHideMenuBar: true,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
