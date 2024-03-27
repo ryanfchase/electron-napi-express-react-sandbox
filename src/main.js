@@ -1,7 +1,15 @@
-require('./express-app.js');
 const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('node:path');
 const { name, expressPort } = require('../package.json');
+const isDev = require('electron-is-dev');
+const electronSquirrelStartup = require('electron-squirrel-startup');
+
+if (!isDev) {
+  require('./express-app.js');
+  console.log("Running in production");
+}
+else {
+  console.log("Running in development");
+}
 
 const appName = app.getPath("exe");
 const expressAppUrl = `http://127.0.0.1:${expressPort}`;
@@ -9,7 +17,7 @@ const WINDOWS_OS = appName.endsWith(`${name}.exe`);
 let mainWindow, backgroundWindow;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
+if (electronSquirrelStartup) {
   app.quit();
 }
 

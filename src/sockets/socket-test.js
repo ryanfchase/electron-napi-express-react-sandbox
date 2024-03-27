@@ -1,7 +1,10 @@
 const net = require('node:net');
 const dgram = require('node:dgram');
-const port = 3000;
-const host = '1.2.3.4';
+
+let port = 3000;
+let host = '1.2.3.4';
+// host = '10.10.30.135'; // work - wlan
+host = '192.168.1.33'; // home - wlan
 
 let INPUT_MODES = {
   UNINITIALIZED: -1,
@@ -103,6 +106,7 @@ const sendAndReceive = (message, timeout=1000) => {
 }
 
 let client;
+const moduleConfigs = { };
 const tryTcp = async () => {
   try {
     client = await connect(3000);
@@ -116,7 +120,6 @@ const tryTcp = async () => {
     const versionReponse = await sendAndReceive('version\r\n');
     console.log('gotVersion: ', versionReponse);
 
-    const moduleConfigs = { };
     const commands = [
       'wlan.mac',
       'wlan.ssid',
@@ -157,6 +160,21 @@ const tryUdp = async () => {
 
     client.on('message', (msg, rinfo) => {
       console.log(`client got: ${msg} from ${rinfo.address}:${rinfo.port}`);
+      if (msg.includes('Origin')) {
+        // handle origin
+
+      }
+      else if (msg.includes('ZENTRI')) {
+        // handle skyportal
+        try {
+          let response = JSON.parse(msg);
+          console.log({...response, ...rinfo})
+          client.close();
+        }
+        catch(error) {
+          console.error("In TryUdp --> error was: ", error.message);
+        }
+      }
     });
 
     client.on('listening', () => {

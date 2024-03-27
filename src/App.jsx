@@ -180,13 +180,25 @@ function App() {
     }, 3000)
   }
 
-  const handleSeekDevices = () => {
+  const handleSeekDevices = async () => {
     setDeviceFound(false);
     setStatus('');
-    setStatusMessage(content.fakeDeviceStatusMessage);
+    setStatusMessage(content.fakeDeviceStatusMessage); // this is actually ok
     setTestIdx((prevIdx) => (prevIdx + 1) % testObject.length);
 
-    setTimeout(() => {
+    // let lastIpd = await axios.get('/saved-address')
+
+    let broadcast = await axios.get('/info');
+    console.log(`express/info gets`, broadcast.data.address);
+    let res = await axios.get(`/connect`, {
+      params: {
+        ip: broadcast.data.address,
+        port: '3000',
+      }
+    });
+    console.log(`express/connect`, res.data);
+
+    if (res.data.error === undefined) {
       setNetworkName(testObject[testIdx].networkName);
       setNetworkPassphrase(testObject[testIdx].networkPassphrase);
       setModuleName(testObject[testIdx].moduleName);
@@ -194,7 +206,7 @@ function App() {
       setStatus('success');
       setStatusMessage('MODULE FOUND');
       setDeviceFound(true);
-    }, 3000);
+    }
   }
 
   return (
@@ -217,7 +229,6 @@ function App() {
       <div id="wifi-tool-control-bar" className="celestron-background">
         <div className="centered-controls">
           <button className="celestron-control-button" onClick={handleSeekDevices}>Seek Devices</button>
-          {/* <pre className="seek-device-control-status">Status: {content.fakeDeviceStatus}</pre> */}
           <div className={`pre-container ${status}`}>
             <code>
               {statusMessage}
