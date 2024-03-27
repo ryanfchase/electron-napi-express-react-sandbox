@@ -1,6 +1,17 @@
 const dgram = require('node:dgram');
+const winston = require('winston');
 
-// todo - add a timeout
+const logger = winston.createLogger({
+  level: 'verbose',
+  format: winston.format.json(),
+  // defaultMeta: { service: 'user-service' },
+  transports: [
+    new winston.transports.Console()
+  ]
+})
+
+const acceptedModules = require('../../config/accepted-modules.json');
+
 const tryUdp = (broadcastPort, timeout=6000) => {
   return new Promise((resolve, reject) => {
     let moduleConfigs = {};
@@ -12,17 +23,17 @@ const tryUdp = (broadcastPort, timeout=6000) => {
     try {
       const client = dgram.createSocket('udp4');
 
-      console.log('listening for udp broadcast: ', JSON.stringify(client));
+      logger.verbose('listening for udp broadcast: ', JSON.stringify(client));
 
       client.on('error', error => {
-        console.error(`client udp broadcast error: ${error.stack}`);
+        logger.warn(`client udp broadcast error: ${error.stack}`);
         clearTimeout(timer);
         reject(error);
         client.close();
       })
 
       client.on('message', (message, rinfo) => {
-        console.log(`client got ${message} from ${rinfo.address}:${rinfo.port}`);
+        logger.verbose(`client got ${message} from ${rinfo.address}:${rinfo.port}`);
         if (message.includes('Origin')) {
           // handle origin
         }
@@ -30,7 +41,7 @@ const tryUdp = (broadcastPort, timeout=6000) => {
           // handle skyportal
           let repsonse = JSON.parse(message);
           moduleConfigs = {...repsonse, ...rinfo};
-          console.log('sending to frontend...', moduleConfigs);
+          logger.verbose('response from broadcast: ', moduleConfigs);
           clearTimeout(timer);
           resolve(moduleConfigs);
           client.close();
@@ -39,13 +50,13 @@ const tryUdp = (broadcastPort, timeout=6000) => {
 
       client.on('listening', () => {
         const {address, port} = client.address();
-        console.log(`client listening on ${address}:${port}`)
+        logger.verbose(`client listening on ${address}:${port}`)
       })
 
       client.bind(broadcastPort);
     }
     catch (error) {
-      console.error("In /info -- error was: ", error.message);
+      logger.warn("In /info -- error was: ", error.message);
       clearTimeout(timer);
       reject(error);
     }

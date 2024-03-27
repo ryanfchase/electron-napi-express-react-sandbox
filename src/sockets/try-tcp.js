@@ -1,15 +1,37 @@
 const net = require('node:net');
+const acceptedModules = require('../../config/accepted-modules.json');
+const winston = require('winston');
 
+const logger = winston.createLogger({
+  level: 'verbose',
+  format: winston.format.json(),
+  // defaultMeta: { service: 'user-service' },
+  transports: [
+    new winston.transports.Console()
+  ]
+})
+
+let INPUT_MODE = 'uninitialized';
 let lookingForFirstAck = true;
 let resolver, rejecter, timer;
 let messageBuffer = [];
+let _host = '', _port = '';
 const eomToken = '> ';
-let moduleConfigs = { };
+
+const printPacket = (res, mode, nread) => {
+  res = res.replaceAll('\n', '\\n').replaceAll('\r','\\r');
+  logger.verbose(`${_host}:${_port}::PACKET::(MODE|${mode})[${res}], nread: ${JSON.stringify(nread)}`);
+}
+
+const printMessage = (final, mode) => {
+  final = final.replaceAll('\n', '\\n').replaceAll('\r','\\r');
+  logger.verbose(`${_host}:${_port}::MESSAGE::(MODE|${mode})[${final}]`);
+}
 
 const readPacket = (nread, data) => {
   // convert buffer to string
   const receivedData = data.toString('utf8', 0, nread);
-  // printPacket(LOG_LEVEL, receivedData, INPUT_MODE, nread);
+  printPacket(receivedData, INPUT_MODE, nread);
 
   if (lookingForFirstAck && receivedData == eomToken) {
     lookingForFirstAck = false;
@@ -28,7 +50,7 @@ const readPacket = (nread, data) => {
         messageBuffer.push(message);
       else if (message !== '') {
         clearTimeout(timer);
-        // printMessage(LOG_LEVEL, message, INPUT_MODE);
+        printMessage(message, INPUT_MODE);
         resolver(message);
       }
     });
@@ -39,7 +61,7 @@ const readPacket = (nread, data) => {
 }
 
 const handleError = (error, mode) => {
-  console.log("error occured in mode ", mode);
+  logger.warn("error occured in mode ", mode);
   clearTimeout(timer);
   rejecter(error);
 }
@@ -49,6 +71,8 @@ const connect = (host, port, timeout) => {
     const client = net.createConnection({port, host, onread: {
       buffer: Buffer.alloc(4 * 1024),
     }}, () => {
+      _host = host;
+      _port = port;
       clearTimeout(timer);
       resolve(client);
     })
@@ -82,8 +106,7 @@ const tryTcp = async (host, port, timeoutConnect=3000, timeoutRequest=1000) => {
     client.on('data', data => readPacket(data.length, data));
     client.on('error', error => handleError(error, INPUT_MODE));
 
-    const versionReponse = await sendAndReceive(client, 'version\r\n');
-    console.log('gotVersion: ', versionReponse);
+    moduleConfigs['version'] = await sendAndReceive(client, 'version\r\n');
 
     const commands = [
       'wlan.mac',
@@ -97,6 +120,7 @@ const tryTcp = async (host, port, timeoutConnect=3000, timeoutRequest=1000) => {
 
     // don't use forEach.. doesn't play well with Promises
     for (const command of commands) {
+      INPUT_MODE = command.trim();
       const response = await sendAndReceive(client, `get ${command}\r\n`, timeoutRequest);
       moduleConfigs[command] = response.trim();
     } 
@@ -104,7 +128,7 @@ const tryTcp = async (host, port, timeoutConnect=3000, timeoutRequest=1000) => {
     client.end();
   }
   catch (error) {
-    console.error("In TryTcp --> error was: ", error.message);
+    logger.warn("In TryTcp --> error was: ", error.message);
   }
 
   return moduleConfigs;

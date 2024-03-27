@@ -1,11 +1,10 @@
-console.log("***********************************************************")
-console.log("printing from server!")
-console.log("***********************************************************")
 
 const express = require('express');
 const cors = require('cors');
 const tryUdp = require('./sockets/try-udp.js');
 const tryTcp = require('./sockets/try-tcp.js');
+const winston = require('winston');
+const expressWinston = require('express-winston');
 
 const name = 'celestron-wifi-tool';
 const expressPort = 3131;
@@ -16,6 +15,34 @@ let transactionId = 0;
 let moduleConfigs = {};
 const broadcastPort = 55555;
 
+
+app.use(expressWinston.logger({
+  transports: [
+    new winston.transports.Console()
+  ],
+  format: winston.format.combine(
+    // winston.format.colorize(),
+    winston.format.json()
+  ),
+  meta: false,
+  msg: "HTTP ",
+  expressFormat: true,
+  colorize: false,
+  ignoreRoute: (req, res) => false
+}))
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  // defaultMeta: { service: 'user-service' },
+  transports: [
+    new winston.transports.Console()
+  ]
+})
+
+logger.info("***********************************************************")
+logger.info("printing from server!")
+logger.info("***********************************************************")
 
 app.use(cors(), (req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -28,34 +55,19 @@ app.get('/', (req, res) => {
   res.send('Hello World! -- txnId: ' + transactionId++);
 })
 
-app.get('/greet', (req, res) => {
-  const name = req.query.name; // fetch the 'name' parameter from request query
-  console.log('greeting now');
-  if (name) {
-    res.send("Greetings " + name + ", " + " -- txnId: " + transactionId++)
-  }
-  else {
-    res.send("Greetings stranger! -- txnId: " + transactionId++);
-  }
-})
-
 app.get('/info', async (req, res) => {
   let broadcastResponse = await tryUdp(broadcastPort);
-  console.log('\texpress @ /info: ', broadcastResponse);
   res.json({...broadcastResponse, transactionId});
   transactionId++;
 })
 
 app.get('/connect', async (req, res) => {
-  console.log('\texpress @ /connect');
   const {ip, port} = req.query;
-  console.log(`\texpress::${ip}:${port}`);
   let configs = await tryTcp(ip, port);
-  console.log('\texpress @ /connect: ', configs);
   res.json({...configs, transactionId});
   transactionId++;
 })
 
 app.listen(expressPort, () => {
-  console.log(`Example app listening on port ${expressPort}`)
+  logger.info(`Example app listening on port ${expressPort}`)
 })
