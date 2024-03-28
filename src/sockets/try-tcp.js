@@ -146,11 +146,19 @@ const tryTcp = async (host, port, commands, mode, timeoutConnect=3000, timeoutRe
 
     // if we were setting configurations, send a 'save' command
     if (mode === 'set') {
-      const saved = await sendAndReceive(client, "save\r\n", timeoutRequest);
-      moduleConfigs['save'] = saved;
+      const save = await sendAndReceive(client, "save\r\n", timeoutRequest);
+      moduleConfigs['save'] = save;
+      // finally, send a reboot command
+      const reboot = "reboot\r\n";
+      client.write(reboot, 'utf8', () => {
+        logger.verbose('all set commands completed, rebooting and closing connection')
+        client.end();
+      })
     }
-
-    client.end();
+    else {
+      logger.verbose('all get commands completed, closing connection')
+      client.end();
+    }
   }
   catch (error) {
     logger.warn("In TryTcp --> error was: " + error.message);
