@@ -17,13 +17,13 @@ const tryUdp = (broadcastPort, timeout=6000) => {
     let moduleConfigs = {};
 
     const timer = setTimeout(() => {
-      reject(new Error('Connection timeout in tryUdp'));
+      reject(new Error('connection timed out, could not detect broadcast'));
     }, timeout);
 
     try {
       const client = dgram.createSocket('udp4');
 
-      logger.verbose('listening for udp broadcast: ', JSON.stringify(client));
+      logger.verbose('listening for udp broadcast: ' + JSON.stringify(client));
 
       client.on('error', error => {
         logger.warn(`client udp broadcast error: ${error.stack}`);
@@ -41,7 +41,7 @@ const tryUdp = (broadcastPort, timeout=6000) => {
           // handle skyportal
           let repsonse = JSON.parse(message);
           moduleConfigs = {...repsonse, ...rinfo};
-          logger.verbose('response from broadcast: ', moduleConfigs);
+          logger.verbose('response from broadcast: ' + moduleConfigs);
           clearTimeout(timer);
           resolve(moduleConfigs);
           client.close();
@@ -56,9 +56,9 @@ const tryUdp = (broadcastPort, timeout=6000) => {
       client.bind(broadcastPort);
     }
     catch (error) {
-      logger.warn("In /info -- error was: ", error.message);
+      logger.warn("In /info -- error was: " + error.message);
       clearTimeout(timer);
-      reject(error);
+      reject({error});
     }
   });
 }

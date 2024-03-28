@@ -61,7 +61,7 @@ const readPacket = (nread, data) => {
 }
 
 const handleError = (error, mode) => {
-  logger.warn("error occured in mode ", mode);
+  logger.warn("error occured in mode " + mode);
   clearTimeout(timer);
   rejecter(error);
 }
@@ -79,7 +79,7 @@ const connect = (host, port, timeout) => {
 
     const timer = setTimeout(() => {
       client.destroy();
-      reject(new Error('Connection timeout'));
+      reject(new Error('Timed out while attempting to establish a TCP connection to module'));
     }, timeout);
   })
 }
@@ -128,7 +128,8 @@ const tryTcp = async (host, port, timeoutConnect=3000, timeoutRequest=1000) => {
     client.end();
   }
   catch (error) {
-    logger.warn("In TryTcp --> error was: ", error.message);
+    logger.warn("In TryTcp --> error was: " + error.message);
+    moduleConfigs['error'] = error.message;
   }
 
   return moduleConfigs;

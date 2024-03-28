@@ -1,23 +1,38 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { name, expressPort } = require('../package.json');
-const isDev = require('electron-is-dev');
+const startExpressApp = require('./express-app');
 const electronSquirrelStartup = require('electron-squirrel-startup');
 const path = require('node:path');
+const fs = require('node:fs');
 
-console.log("PATH INFO", {
-  dirname: __dirname,
-  home: app.getPath("home"),
-  userData: app.getPath("userData"),
-  preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
-  mainWindow: MAIN_WINDOW_WEBPACK_ENTRY,
-})
 
-if (!isDev) {
-  require('./express-app.js')();
-  console.log("Running in production");
+if (app.isPackaged) {
+  console.log('running in production')
+  const userDataFile = "user-data.json";
+  const userDataPath = app.getPath('userData');
+  const fullPath = path.join(userDataPath, userDataFile);
+  fs.open(fullPath, 'r', (err, fd) => {
+    if (err) {
+      // file didn't exist, create it
+      console.log("couldn't find user data path, creating it at ", fullPath);
+      fs.writeFile(fullPath, JSON.stringify({lastAddress: '1.2.3.4', sandboxValue: 0}), (err) => console.error(err));
+    }
+    else {
+      console.log('found user data path', fullPath);
+    }
+  });
+
+  startExpressApp(userDataPath);
 }
 else {
-  console.log("Running in development");
+  console.log('running in development')
+  console.log("PATH INFO", {
+    dirname: __dirname,
+    home: app.getPath("home"),
+    userData: app.getPath("userData"),
+    preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+    mainWindow: MAIN_WINDOW_WEBPACK_ENTRY,
+  })
 }
 
 const appName = app.getPath("exe");

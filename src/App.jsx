@@ -180,32 +180,89 @@ function App() {
     }, 3000)
   }
 
+  const macAddressToModuleName = (mac) => mac.split(':').slice(-2).join('').slice(-3);
   const handleSeekDevices = async () => {
     setDeviceFound(false);
     setStatus('');
     setStatusMessage(content.fakeDeviceStatusMessage); // this is actually ok
-    setTestIdx((prevIdx) => (prevIdx + 1) % testObject.length);
+    // setTestIdx((prevIdx) => (prevIdx + 1) % testObject.length);
 
-    // let lastIpd = await axios.get('/saved-address')
+    let res;
 
-    let broadcast = await axios.get('/info');
-    console.log(`express/info gets`, broadcast.data.address);
-    let res = await axios.get(`/connect`, {
-      params: {
-        ip: broadcast.data.address,
-        port: '3000',
+    // first attempt to get last ip address
+    res = await axios.get('/last-address')
+    if (res.data.error) {
+      console.log('could not obtain last ip-address')
+    }
+    else {
+      const lastAddress = res.data.lastAddress;
+      console.log('last ip we saw was: ', lastAddress)
+
+      // second, attempt to connect via that ip address
+      res = await axios.get('/connect', {
+        params: {
+          ip: res.data.lastAddress,
+          port: '3000',
+        }
+      })
+      if (res.data.error) {
+        console.log('unable to connect to ', lastAddress);
       }
-    });
-    console.log(`express/connect`, res.data);
+      else {
+        console.log('response to last ip res was: ', res);
 
-    if (res.data.error === undefined) {
-      setNetworkName(testObject[testIdx].networkName);
-      setNetworkPassphrase(testObject[testIdx].networkPassphrase);
-      setModuleName(testObject[testIdx].moduleName);
-      setModulePassphrase(testObject[testIdx].modulePassphrase);
-      setStatus('success');
-      setStatusMessage('MODULE FOUND');
-      setDeviceFound(true);
+        // do something
+        setNetworkName(res.data['wlan.ssid']);
+        setNetworkPassphrase(res.data['wlan.passkey']);
+        setModuleName(`Celestron-${macAddressToModuleName(res.data['wlan.mac'])}`);
+        setModulePassphrase(res.data['softap.passkey']);
+        setStatus('success');
+        setStatusMessage('MODULE FOUND');
+        setDeviceFound(true);
+        return;
+      }
+    }
+
+    // if that fails, attempt to get a broadcast response
+    let broadcast = await axios.get('/broadcast');
+    console.log(`express/info gets`, broadcast.data.address);
+
+    if (broadcast.data.error) {
+      // unable to find broadcast signal, failure...
+      console.log("unable to find _any_ signal... cannot proceed");
+    }
+    else {
+      // take response from broadcast and attempt to connect
+      let port = '3000';
+      res = await axios.get(`/connect`, {
+        params: {
+          ip: broadcast.data.address,
+          port: port,
+        }
+      });
+      console.log(`express/connect @ ${broadcast.data.address}:${port}`, res.data);
+
+      if (res.data.error) {
+        // unable to connect to the broadcast's ip address (maybe try a different port)
+        console.log('no response attempting to talk to broadcasted ip address... cannot proceed')
+      }
+      else {
+        // since we found an ip address, save it...
+        let updateLastIpRes = await axios.post('/last-address', {
+          address: broadcast.data.address,
+        });
+
+        console.log('post express/last-address returns ' , updateLastIpRes.data);
+
+        setNetworkName(res.data['wlan.ssid']);
+        setNetworkPassphrase(res.data['wlan.passkey']);
+        setModuleName(`Celestron-${macAddressToModuleName(res.data['wlan.mac'])}`);
+        setModulePassphrase(res.data['softap.passkey']);
+        setStatus('success');
+        setStatusMessage('MODULE FOUND');
+        setDeviceFound(true);
+        return;
+      }
     }
   }
 
