@@ -48,8 +48,8 @@ if (electronSquirrelStartup) {
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 840,
-    height: 620,
+    width: 900,
+    height: 575,
     title: "Celestron Wifi Password Manager",
     icon: "./public/celestron-small.jpg", // not so sure about this
     autoHideMenuBar: true,

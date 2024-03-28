@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import celestronSmall from "../public/celestron-small-light.png";
 import wifiTechnology from "../public/wifi-technology.avif";
@@ -36,7 +36,7 @@ const InfoSvg = ({ size=512, scale=1, style, fill }) => (
   </svg>
 )
 
-const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, nameReadOnly=false, }) => {
+const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, ssidRef, passphraseRef, nameReadOnly=false}) => {
   const [name, setName] = useState(defaultName);
   const [passphrase, setPassphrase] = useState(defaultPassphrase);
   const [shouldHide, setShouldHide] = useState(true);
@@ -82,6 +82,7 @@ const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, name
           </td>
           <td>
             <input
+              ref={ssidRef}
               className="credential-input"
               value={name}
               type="text"
@@ -98,6 +99,7 @@ const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, name
           </td>
           <td>
             <input
+              ref={passphraseRef}
               className="credential-input"
               value={passphrase}
               type={shouldHide ? "password" : "text"}
@@ -158,34 +160,62 @@ function App() {
   const [status, setStatus] = useState('');
   const [statusMessage, setStatusMessage] = useState(content.fakeDeviceStatusMessage)
   const [deviceFound, setDeviceFound] = useState(false);
-  // todo - remove
-  const [testIdx, setTestIdx] = useState(0);
+
+  const networkSsidRef = useRef(null);
+  const networkPassphraseRef = useRef(null);
+  const moduleSsidRef = useRef(null);
+  const modulePassphraseRef = useRef(null);
+
+  const inputRefs = [
+    networkSsidRef,
+    networkPassphraseRef,
+    moduleSsidRef,
+    modulePassphraseRef,
+  ]
 
   useEffect(() => {
     handleSeekDevices();
   }, []);
 
-  const handleFinalSubmit = () => {
-    setStatus('');
+  const handleFinalSubmit = async () => {
+    console.log('REF INFO: ', {
+      networkSsid: networkSsidRef.current.value,
+      networkPassphrase: networkPassphraseRef.current.value,
+      moduleSsid: moduleSsidRef.current.value,
+      modulePassphrase: modulePassphraseRef.current.value 
+    });
+    setStatus('')
     setStatusMessage('SENDING CONFIGURATIONS . . .');
-    setTimeout(() => {
-      if (networkName === '' || (modulePassphrase.length != 0 && modulePassphrase.length < 8) ) {
-        setStatusMessage('ERROR WHILE ATTEMPTING TO CONFIGURE');
-        setStatus('failure');
-      }
-      else {
-        setStatusMessage('MODULE CONFIGURED');
-        setStatus('success');
-      }
-    }, 3000)
+
+    const res = await axios.post('/configure', {
+      networkSsid: networkSsidRef.current.value,
+      networkPassphrase: networkPassphraseRef.current.value,
+      modulePassphrase: modulePassphraseRef.current.value,
+    });
+
+    if (res.data.error) {
+      console.log('unable to configure the module: ', res.error);
+    }
+    else {
+      console.log('configured module successfully', res);
+      setStatusMessage('MODULE CONFIGURED');
+      setStatus('success');
+    }
   }
+
 
   const macAddressToModuleName = (mac) => mac.split(':').slice(-2).join('').slice(-3);
   const handleSeekDevices = async () => {
     setDeviceFound(false);
     setStatus('');
     setStatusMessage(content.fakeDeviceStatusMessage); // this is actually ok
-    // setTestIdx((prevIdx) => (prevIdx + 1) % testObject.length);
+    
+    // reset all fields, just to be safe
+    inputRefs.forEach(ref => {
+      if (ref && ref.current) {
+        ref.current.value = '';
+      }
+    });
 
     let res;
 
@@ -195,10 +225,12 @@ function App() {
       console.log('could not obtain last ip-address')
     }
     else {
+      // here we've grabbed the last ip address
+      setStatusMessage('ATTEMPTING TO CONNECT ON LAST KNOWN IP . . .');
       const lastAddress = res.data.lastAddress;
       console.log('last ip we saw was: ', lastAddress)
 
-      // second, attempt to connect via that ip address
+      // attempt to connect via that ip address
       res = await axios.get('/connect', {
         params: {
           ip: res.data.lastAddress,
@@ -209,9 +241,10 @@ function App() {
         console.log('unable to connect to ', lastAddress);
       }
       else {
+        // we've successfully established a connection with our last known ip address
         console.log('response to last ip res was: ', res);
 
-        // do something
+        // set state and return from the event handler
         setNetworkName(res.data['wlan.ssid']);
         setNetworkPassphrase(res.data['wlan.passkey']);
         setModuleName(`Celestron-${macAddressToModuleName(res.data['wlan.mac'])}`);
@@ -221,15 +254,56 @@ function App() {
         setDeviceFound(true);
         return;
       }
+
+      // we only arrive here if we weren't successful using previous ip address,
+      // attempt to connect to 1.2.3.4 (assuming 1.2.3.4 wasn't our previous ip address)
+      if (lastAddress !== '1.2.3.4') {
+        setStatusMessage('ATTEMPTING TO CONNECT VIA DIRECT CONNECT . . .');
+        res = await axios.get('/connect', {
+          params: {
+            ip: '1.2.3.4',
+            port: '3000',
+          }
+        })
+        if (res.data.error) {
+          console.log('unable to connect to 1.2.3.4');
+        }
+        else {
+          console.log('response to direct connect (1.2.3.4) res was: ', res);
+
+          // do something
+          setNetworkName(res.data['wlan.ssid']);
+          setNetworkPassphrase(res.data['wlan.passkey']);
+          setModuleName(`Celestron-${macAddressToModuleName(res.data['wlan.mac'])}`);
+          setModulePassphrase(res.data['softap.passkey']);
+          setStatus('success');
+          setStatusMessage('MODULE FOUND');
+          setDeviceFound(true);
+
+          // since we found module on 1.2.3.4, save as our last known ip address
+          let updateLastIpRes = await axios.post('/last-address', {
+            address: '1.2.3.4',
+          });
+          console.log('post express/last-address returns ' , updateLastIpRes.data);
+          return;
+        }
+      }
+      else {
+        console.log('skipping DC follow up connect attempt since our last known ip was 1.2.3.4')
+      }
     }
 
-    // if that fails, attempt to get a broadcast response
+    // if all prior tcp connection attempts fail, attempt to get a broadcast response
+    setStatusMessage('ATTEMPTING TO FIND DEVICES ON THE NETWORK . . .');
     let broadcast = await axios.get('/broadcast');
-    console.log(`express/info gets`, broadcast.data.address);
+    console.log(`express/broadcast gets`, broadcast.data);
 
-    if (broadcast.data.error) {
+    if (broadcast.data.error || broadcast.data.address === undefined) { // we can probably remove the undefined check, check prev console log
       // unable to find broadcast signal, failure...
       console.log("unable to find _any_ signal... cannot proceed");
+      console.log("MAKE SURE YOU ARE CONNECTED TO THE SAME WIFI :)")
+      setStatus('error')
+      setStatusMessage('UNABLE TO FIND WIFI MODULES ON WLAN');
     }
     else {
       // take response from broadcast and attempt to connect
@@ -245,15 +319,10 @@ function App() {
       if (res.data.error) {
         // unable to connect to the broadcast's ip address (maybe try a different port)
         console.log('no response attempting to talk to broadcasted ip address... cannot proceed')
+        setStatus('error')
+        setStatusMessage('UNABLE TO CONNECT TO MODULES VIA WLAN');
       }
       else {
-        // since we found an ip address, save it...
-        let updateLastIpRes = await axios.post('/last-address', {
-          address: broadcast.data.address,
-        });
-
-        console.log('post express/last-address returns ' , updateLastIpRes.data);
-
         setNetworkName(res.data['wlan.ssid']);
         setNetworkPassphrase(res.data['wlan.passkey']);
         setModuleName(`Celestron-${macAddressToModuleName(res.data['wlan.mac'])}`);
@@ -261,6 +330,13 @@ function App() {
         setStatus('success');
         setStatusMessage('MODULE FOUND');
         setDeviceFound(true);
+
+        // since we found an ip address, save it...
+        let updateLastIpRes = await axios.post('/last-address', {
+          address: broadcast.data.address,
+        });
+
+        console.log('post express/last-address returns ' , updateLastIpRes.data);
         return;
       }
     }
@@ -312,10 +388,14 @@ function App() {
             </table>
             <CredentialsTable
               credentialName="network"
+              ssidRef={networkSsidRef}
+              passphraseRef={networkPassphraseRef}
               defaultName={networkName}
               defaultPassphrase={networkPassphrase} />
             <CredentialsTable
               nameReadOnly
+              ssidRef={moduleSsidRef}
+              passphraseRef={modulePassphraseRef}
               credentialName="direct connect"
               defaultName={moduleName}
               defaultPassphrase={modulePassphrase} />
@@ -325,8 +405,18 @@ function App() {
               </button>
             </div>
           </>
-        ) : (
-          <div className="loading-gif-container">
+        ) :
+        status === 'error' ?
+        (<div>
+          <p>There were no devices viewable on the network. Please follow these troubleshooting steps to make your device identifiable:</p>
+          <ul>
+            <li>Ensure that the wifi module is plugged in correctly, and the mount is on.</li>
+            <li>If the wifi module is in direct connect, ensure you are connected to the ad-hoc network</li>
+            <li>If the wifi module is in WLAN, ensure you are connected to the paired network</li>
+            <li>If the above steps do not resolve the issue, attempt to reset the wifi module,see instructions [here]</li>
+          </ul>
+        </div>) :
+        (<div className="loading-gif-container">
             <img className="loading-gif" src={loading} alt="loading-devices"/>
           </div>
         )}
@@ -336,3 +426,17 @@ function App() {
 }
 
 export default App;
+    /*
+    spoofed data update
+
+    setTimeout(() => {
+      if (networkName === '' || (modulePassphrase.length != 0 && modulePassphrase.length < 8) ) {
+        setStatusMessage('ERROR WHILE ATTEMPTING TO CONFIGURE');
+        setStatus('failure');
+      }
+      else {
+        setStatusMessage('MODULE CONFIGURED');
+        setStatus('success');
+      }
+    }, 3000)
+    */

@@ -3,7 +3,7 @@ const acceptedModules = require('../../config/accepted-modules.json');
 const winston = require('winston');
 
 const logger = winston.createLogger({
-  level: 'info',
+  level: 'verbose',
   format: winston.format.json(),
   // defaultMeta: { service: 'user-service' },
   transports: [
@@ -15,8 +15,20 @@ let INPUT_MODE = 'uninitialized';
 let lookingForFirstAck = true;
 let resolver, rejecter, timer;
 let messageBuffer = [];
-let _host = '', _port = '';
+let _host = '';
+let _port = '';
 const eomToken = '> ';
+
+const initialize = () => {
+  INPUT_MODE = 'uninitialized';
+  lookingForFirstAck = true;
+  resolver = null;
+  rejecter = null;
+  timer = null;
+  messageBuffer = [];
+  _host = '';
+  _port = '';
+}
 
 const printPacket = (res, mode, nread) => {
   res = res.replaceAll('\n', '\\n').replaceAll('\r','\\r');
@@ -26,6 +38,11 @@ const printPacket = (res, mode, nread) => {
 const printMessage = (final, mode) => {
   final = final.replaceAll('\n', '\\n').replaceAll('\r','\\r');
   logger.verbose(`${_host}:${_port}::MESSAGE::(MODE|${mode})[${final}]`);
+}
+
+const printWrite = (final, mode) => {
+  final = final.replaceAll('\n', '\\n').replaceAll('\r','\\r');
+  logger.verbose(`${_host}:${_port}::WRITE::(MODE|${mode})[${final}]`);
 }
 
 const readPacket = (nread, data) => {
@@ -95,35 +112,43 @@ const sendAndReceive = (client, message, timeout=1000) => {
     }, timeout);
 
     // finally - write message
-    setTimeout(() => client.write(message, 'utf8'), 100);
+    setTimeout(() => client.write(message, 'utf8', () => {
+      printWrite(message, INPUT_MODE);
+    }), 100);
   });
 }
 
-const tryTcp = async (host, port, timeoutConnect=3000, timeoutRequest=1000) => {
+const tryTcp = async (host, port, commands, mode, timeoutConnect=3000, timeoutRequest=3000) => {
   let moduleConfigs = {};
+  initialize();
+
+  if (mode !== 'get' && mode !== 'set') {
+    moduleConfigs['error'] = 'Developer error -- must use "get" or "set" with TCP commands';
+    return moduleConfigs;
+  }
+
   try {
+    logger.verbose('in tcp with ' + JSON.stringify({host, port, mode, commands}));
     const client = await connect(host, port, timeoutConnect);
     client.on('data', data => readPacket(data.length, data));
     client.on('error', error => handleError(error, INPUT_MODE));
 
+    INPUT_MODE = 'version';
     moduleConfigs['version'] = await sendAndReceive(client, 'version\r\n');
 
-    const commands = [
-      'wlan.mac',
-      'wlan.ssid',
-      'wlan.passkey',
-      'softap.passkey',
-      'wlan.static.ip',
-      'wlan.static.gateway',
-      'wlan.static.netmask',
-    ];
-
     // don't use forEach.. doesn't play well with Promises
-    for (const command of commands) {
-      INPUT_MODE = command.trim();
-      const response = await sendAndReceive(client, `get ${command}\r\n`, timeoutRequest);
-      moduleConfigs[command] = response.trim();
+    for (const {name, arg} of commands) {
+      INPUT_MODE = name.trim();
+      const argString = (arg !== undefined) ? ` \"${arg}\"` : '';
+      const response = await sendAndReceive(client, `${mode} ${name}${argString}\r\n`, timeoutRequest);
+      moduleConfigs[name] = response.trim();
     } 
+
+    // if we were setting configurations, send a 'save' command
+    if (mode === 'set') {
+      const saved = await sendAndReceive(client, "save\r\n", timeoutRequest);
+      moduleConfigs['save'] = saved;
+    }
 
     client.end();
   }

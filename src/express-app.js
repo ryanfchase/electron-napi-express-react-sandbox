@@ -106,26 +106,73 @@ module.exports = (userDataDir) => {
   })
 
   app.get('/broadcast', async (req, res) => {
-    let broadcastResponse = await tryUdp(broadcastPort);
-    if (broadcastResponse.error) {
-      // res.status(500).send({ error: broadcastResponse.error , transactionId });
-      res.json({ error: broadcastResponse.error , transactionId });
+    try {
+      let broadcastResponse = await tryUdp(broadcastPort);
+      if (broadcastResponse.error) {
+        // res.status(500).send({ error: broadcastResponse.error , transactionId });
+        res.json({ error: broadcastResponse.error , transactionId });
+      }
+      else {
+        res.json({...broadcastResponse, transactionId});
+      }
     }
-    else {
-      res.json({...broadcastResponse, transactionId});
+    catch(error) {
+      res.json({error: error.message, transactionId});
     }
     transactionId++;
   })
 
   app.get('/connect', async (req, res) => {
     const {ip, port} = req.query;
-    let configs = await tryTcp(ip, port);
-    if (configs.error) {
+    const commandList = [
+      { name: 'wlan.mac' },
+      { name: 'wlan.ssid' },
+      { name: 'wlan.passkey' },
+      { name: 'softap.passkey' },
+      { name: 'wlan.static.ip' },
+      { name: 'wlan.static.gateway' },
+      { name: 'wlan.static.netmask' },
+    ]
+    let moduleResponse = await tryTcp(ip, port, commandList, 'get');
+    logger.info('in connect, moduleResponse was: ' + JSON.stringify(moduleResponse));
+    if (moduleResponse.error) {
       // res.status(500).send({ error: configs.error , transactionId });
-      res.json({ error: configs.error , transactionId });
+      res.json({ error: moduleResponse.error , transactionId });
     }
     else {
-      res.json({...configs, transactionId});
+      res.json({...moduleResponse, transactionId});
+    }
+    transactionId++;
+  })
+
+  app.post('/configure', async(req, res) => {
+    let store = await getStore(logger);
+    let port = 3000;
+
+    const {
+      networkSsid,
+      networkPassphrase,
+      modulePassphrase
+    } = req.body;
+    logger.info('express @ /configure received body: ' + req.body);
+    logger.info('express @ /configure received lastA: ' + req.body);
+
+    const commandList = [
+      { name: 'wlan.ssid', arg: networkSsid },
+      { name: 'wlan.passkey', arg: networkPassphrase },
+      { name: 'softap.passkey', arg: modulePassphrase },
+      { name: 'wlan.dhcp.enabled', arg: "1" },
+      { name: 'wlan.static.ip', arg: "0.0.0.0" },
+      { name: 'wlan.static.gateway', arg: "0.0.0.0" },
+      { name: 'wlan.static.netmask', arg: "0.0.0.0" },
+    ]
+
+    let moduleResponse = await tryTcp(store.lastAddress, port, commandList, 'set');
+    if (moduleResponse.error) {
+      res.json({ error: moduleResponse.error, transactionId});
+    }
+    else {
+      res.json({...moduleResponse, transactionId });
     }
     transactionId++;
   })
