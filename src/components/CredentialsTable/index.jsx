@@ -8,7 +8,7 @@ const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, ssid
   const [error, setError] = useState('')
 
   const networkNameCannotBeNull = "The network SSID must not be null.";
-  const passphraseLengthTooShort = "Non-empty passphrase must be at least 8 characters";
+  const passphraseLengthTooShort = "Non-empty password must be at least 8 characters";
   const cannotUpdateModulePassphrase = "Unable to modify direct connect password on certain wifi modules. Click info button for details.";
 
   const handleOnClick = () => {
@@ -62,7 +62,7 @@ const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, ssid
         </tr>
         <tr>
           <td className="device-detail first-col">
-            <span className="credential-title">{credentialName} Passphrase</span>
+            <span className="credential-title">{credentialName} Password</span>
           </td>
           <td>
             <input
@@ -70,7 +70,7 @@ const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, ssid
               className="credential-input"
               value={passphrase}
               type={shouldHide ? "password" : "text"}
-              placeholder={`Enter optional passphrase`}
+              placeholder={`Enter optional password`}
               disabled={passphraseReadOnly}
               onChange={handlePassphraseChange}
             >
