@@ -151,7 +151,9 @@ module.exports = (userDataDir) => {
         res.json({ error: moduleResponse.error , transactionId });
       }
       else {
-        res.json({...moduleResponse, transactionId});
+        // success, also include whether we can update the direct connect passphrase
+        const canOverrideModulePassphrase = moduleResponse.version && moduleResponse.version.includes("AMW007");
+        res.json({...moduleResponse, canOverrideModulePassphrase, transactionId});
       }
     }
     catch(error) {

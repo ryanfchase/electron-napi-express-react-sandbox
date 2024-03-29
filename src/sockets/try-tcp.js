@@ -145,6 +145,15 @@ const tryTcp = async (host, port, commands, mode, timeoutConnect=3000, timeoutRe
 
     // don't use forEach.. doesn't play well with Promises
     for (const {name, arg} of commands) {
+      // double check we only set passphrase for AMW007
+      if (name === 'softap.passkey' && mode === 'set') {
+        const moduleCanResetPassphrase = moduleConfigs['version'].includes("AMW007");
+        if (!moduleCanResetPassphrase && (arg !== undefined || arg !== '')) {
+          logger.warn('(somehow) attempted to set password for a non resettable module... aborting this command');
+          throw new Error('Attempting to set module direct connect passkey for module that does not support resetting the password. Aborting.');
+        }
+      }
+
       INPUT_MODE = name.trim();
       const argString = (arg !== undefined) ? ` \"${arg}\"` : '';
       const response = await sendAndReceive(client, `${mode} ${name}${argString}\r\n`, timeoutRequest);

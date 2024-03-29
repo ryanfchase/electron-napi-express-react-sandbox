@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const { name, expressPort } = require('../package.json');
 const startExpressApp = require('./express-app');
 const electronSquirrelStartup = require('electron-squirrel-startup');
@@ -63,15 +63,16 @@ const createWindow = () => {
     },
   });
 
+  if (app.isPackaged) {
+    mainWindow.setMenu(null);
+  }
+
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
 
   // Splash Screen
   splashScreen = new BrowserWindow({
@@ -83,13 +84,6 @@ const createWindow = () => {
 
   splashScreen.loadFile(path.join(__dirname, "./splash.html"));
   splashScreen.center();
-
-  // setTimeout(() => {
-  //   splashScreen.close(); // todo - put back
-  //   mainWindow.center();
-  //   mainWindow.show();
-  //   splashScreen = null; // todo - put back
-  // }, 5000);
 };
 
 // This method will be called when Electron has finished
@@ -120,9 +114,17 @@ app.on('activate', () => {
 // IPC Methods
 ipcMain.on('react-ready', (event, arg) => {
   if (splashScreen) {
-    mainWindow.center();
-    mainWindow.show();
-    splashScreen.close();
-    splashScreen = null;
+    // there must be a better way
+    setTimeout(() => {
+      mainWindow.center();
+      mainWindow.show();
+      splashScreen.close();
+      splashScreen = null;
+    }, 2000);
   }
+})
+
+const skyPortalManualUrl = "https://celestron-site-support-files.s3.amazonaws.com/support_files/93973_Celestron%20SkyPortal%20WiFi%20Accessory_Manual_5LANG_Web.pdf";
+ipcMain.on('open-skyportal-manual', (event, arg) => {
+  shell.openExternal(skyPortalManualUrl);
 })

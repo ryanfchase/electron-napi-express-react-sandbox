@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./index.css";
 
-const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, ssidRef, passphraseRef, nameReadOnly=false}) => {
+const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, ssidRef, passphraseRef, nameReadOnly=false, passphraseReadOnly=false}) => {
   const [name, setName] = useState(defaultName);
   const [passphrase, setPassphrase] = useState(defaultPassphrase);
   const [shouldHide, setShouldHide] = useState(true);
@@ -9,6 +9,7 @@ const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, ssid
 
   const networkNameCannotBeNull = "The network SSID must not be null.";
   const passphraseLengthTooShort = "Non-empty passphrase must be at least 8 characters";
+  const cannotUpdateModulePassphrase = "Unable to modify direct connect password on certain wifi modules. Click info button for details.";
 
   const handleOnClick = () => {
     setShouldHide((prevShouldHide) => !prevShouldHide);
@@ -70,16 +71,25 @@ const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, ssid
               value={passphrase}
               type={shouldHide ? "password" : "text"}
               placeholder={`Enter optional passphrase`}
+              disabled={passphraseReadOnly}
               onChange={handlePassphraseChange}
             >
             </input>
             <button className="celestron-button-small" onClick={handleOnClick}>{shouldHide ? 'Reveal' : 'Hide'}</button>
           </td>
         </tr>
-        <tr>
-          <td></td>
-          <td className="credential-error">{error}</td>
-        </tr>
+        { error && (
+          <tr>
+            <td className="first-col"></td>
+            <td className="credential-error">{error}</td>
+          </tr>
+        )}
+        { passphraseReadOnly && (
+          <tr>
+            <td className="first-col"></td>
+            <td className="credential-error">{cannotUpdateModulePassphrase}</td>
+          </tr>
+        )}
       </tbody>
     </table>
   );

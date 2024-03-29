@@ -8,6 +8,7 @@ import loadingGif from "../public/loading.gif";
 import axios from './api';
 import DeviceManager from "./components/DeviceManager";
 import TroubleshootingPage from "./components/TroubleshootingPage";
+import ReadyPage from "./components/ReadyPage";
 
 const { ipcRenderer } = window.require('electron');
 
@@ -51,22 +52,17 @@ function App() {
   const [status, setStatus] = useState('');
   const [statusMessage, setStatusMessage] = useState('READY')
   const [deviceFound, setDeviceFound] = useState(false);
+  const [canOverrideModulePassphrase, setCanOverrideModulePassphrase] = useState(false);
   const [idle, setIdle] = useState(true);
 
   const networkSsidRef = useRef(null);
   const networkPassphraseRef = useRef(null);
   const moduleSsidRef = useRef(null);
   const modulePassphraseRef = useRef(null);
-
-  const inputRefs = [
-    networkSsidRef,
-    networkPassphraseRef,
-    moduleSsidRef,
-    modulePassphraseRef,
-  ]
+  const seekDeviceButtonRef = useRef(null);
 
   useEffect(() => {
-    // handleSeekDevices(); // uncomment to launch with seek device call
+    // handleSeekDevices(); // uncomment to launch app with seek device call
     ipcRenderer.send('react-ready');
   }, []);
 
@@ -100,6 +96,11 @@ function App() {
     setIdle(false);
     setStatus('');
     setStatusMessage(content.deviceStatusSeekingDevices);
+
+    // disable the seek device button while we are seeking
+    if (seekDeviceButtonRef.current) {
+      seekDeviceButtonRef.current.disabled = true;
+    }
     
     // reuse this response variable for axios calls (can be refactored)
     let res;
@@ -138,6 +139,11 @@ function App() {
           setStatus('success');
           setStatusMessage('MODULE FOUND');
           setDeviceFound(true);
+
+          // check to see if we can modify passphrase
+          if (res.data['canOverrideModulePassphrase'])
+            setCanOverrideModulePassphrase(true);
+
           return;
         }
 
@@ -157,7 +163,7 @@ function App() {
           else {
             console.log('response to direct connect (1.2.3.4) res was: ', res);
 
-            // do something
+            // update device manager forms with relevant data
             setNetworkName(res.data['wlan.ssid']);
             setNetworkPassphrase(res.data['wlan.passkey']);
             setModuleName(`Celestron-${macAddressToModuleName(res.data['wlan.mac'])}`);
@@ -165,6 +171,9 @@ function App() {
             setStatus('success');
             setStatusMessage('MODULE FOUND');
             setDeviceFound(true);
+
+            if (res.data['canOverrideModulePassphrase'])
+              setCanOverrideModulePassphrase(true);
 
             // since we found module on 1.2.3.4, save as our last known ip address
             let updateLastIpRes = await axios.post('/last-address', {
@@ -217,6 +226,9 @@ function App() {
           setStatusMessage('MODULE FOUND');
           setDeviceFound(true);
 
+          if (res.data['canOverrideModulePassphrase'])
+            setCanOverrideModulePassphrase(true);
+
           // since we found an ip address, save it...
           let updateLastIpRes = await axios.post('/last-address', {
             address: broadcast.data.address,
@@ -232,6 +244,11 @@ function App() {
       setStatusMessage('UNEXPECTED ERROR. PLEASE RESTART APPLICATION');
       setStatus('error');
     }
+
+    // reenable seek devices button
+    if (seekDeviceButtonRef.current) {
+      seekDeviceButtonRef.current.disabled = false;
+    }
   }
 
   // package state up into a data structure to pass into CredentialsTable
@@ -242,6 +259,7 @@ function App() {
       passphraseRef: networkPassphraseRef,
       defaultName: networkName,
       defaultPassphrase: networkPassphrase,
+      passphraseReadOnly: false,
     },
     {
       formName: "direct connect",
@@ -249,6 +267,8 @@ function App() {
       passphraseRef: modulePassphraseRef,
       defaultName: moduleName,
       defaultPassphrase: modulePassphrase,
+      // passphraseReadOnly: !(canOverrideModulePassphrase),
+      passphraseReadOnly: true,
     }
   ];
 
@@ -256,9 +276,8 @@ function App() {
   let mainPageContent;
   if (idle) {
     mainPageContent = (
-      <div>
-        <p>Click "Seek Devices" to begin.</p>
-      </div>);
+      <ReadyPage />
+    );
   }
   else if (deviceFound) {
     mainPageContent = (
@@ -297,7 +316,7 @@ function App() {
       </div>
       <div id="wifi-tool-control-bar" className="celestron-background">
         <div className="centered-controls">
-          <button className="celestron-control-button" onClick={handleSeekDevices}>Seek Devices</button>
+          <button ref={seekDeviceButtonRef} className="celestron-control-button" onClick={handleSeekDevices}>Seek Devices</button>
           <div className={`pre-container ${status}`}>
             <code>
               {statusMessage}

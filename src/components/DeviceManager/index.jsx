@@ -32,6 +32,7 @@ const DeviceManager = ({ moduleName, credentials, handleFinalSubmit }) => {
           passphraseRef={table.passphraseRef}
           defaultName={table.defaultName}
           defaultPassphrase={table.defaultPassphrase}
+          passphraseReadOnly={table.passphraseReadOnly}
         />
       )) }
       <div className="final-submit-section">
