@@ -1,0 +1,65 @@
+dialog {
+  border: 3px solid black;
+  max-width: 30em;
+  border-radius: 0.5em;
+  color: #707070;
+  box-shadow: 1px 1px 10px 1px rgba(0,0,0,.8);
+  min-height: 28em;
+  max-height: 80%;
+}
+
+summary {
+  user-select: none;
+}
+
+.dialog-list li {
+  margin-bottom: 1em;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.dialog-close-button {
+  user-select: none;
+  cursor: pointer;
+  border-radius: 8px;
+  background-color: #fff;
+  padding: 0.25em;
+}
+
+.dialog-close-button:hover {
+  background-color: rgb(112, 112, 112, 0.4)
+}
+
+.dialog-contents-container {
+}
+
+.dialog-banner {
+  max-width: 100%;
+  overflow: hidden;
+  height: 8em;
+}
+
+.dialog-banner img {
+}
+
+.inner-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+dialog::backdrop {
+  background: rgb(99 110 122 / 20%); /* from github's delete repo overlay */
+}
+
+.dialog-text {
+  padding: 1.5em 0;
+  margin: 0 1em;
+}

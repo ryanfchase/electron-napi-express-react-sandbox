@@ -6,9 +6,13 @@ const { ipcRenderer } = window.require('electron');
 
 
 const TroubleshootingPage = () => {
-  const handleLinkClick = (e) => {
+  const handleSkyportalLinkClick = (e) => {
     e.preventDefault();
     ipcRenderer.send('open-skyportal-manual');
+  }
+  const handleEvolutionLinkClick = (e) => {
+    e.preventDefault();
+    ipcRenderer.send('open-evolution-manual');
   }
 
   return(
@@ -21,7 +25,7 @@ const TroubleshootingPage = () => {
         <li>Ensure that the wifi module is plugged in correctly, and the mount is on.</li>
         <li>If the wifi module is in direct connect, ensure you are connected to the ad-hoc network</li>
         <li>If the wifi module is in WLAN, ensure you are connected to the paired network</li>
-        <li>If the above steps do not resolve the issue, attempt to reset the wifi module, see instructions manual <a href="#" onClick={handleLinkClick} target="_blank">here</a></li>
+        <li>If the above steps do not resolve the issue, attempt to reset the wifi module, see instructions manual for the <a href="#" onClick={handleSkyportalLinkClick} target="_blank">SkyPortal</a> or <a href="#" onClick={handleEvolutionLinkClick} target="_blank">Evolution Mount</a></li>
       </ul>
     </div>
   );

@@ -125,6 +125,10 @@ ipcMain.on('react-ready', (event, arg) => {
 })
 
 const skyPortalManualUrl = "https://celestron-site-support-files.s3.amazonaws.com/support_files/93973_Celestron%20SkyPortal%20WiFi%20Accessory_Manual_5LANG_Web.pdf";
+const evolutionManualUrl = "https://s3.amazonaws.com/celestron-site-support-files/support_files/CELESTRON_NexStarEVOLUTION_Manual.pdf";
 ipcMain.on('open-skyportal-manual', (event, arg) => {
   shell.openExternal(skyPortalManualUrl);
+})
+ipcMain.on('open-evolution-manual', (event, arg) => {
+  shell.openExternal(evolutionManualUrl);
 })

@@ -5,10 +5,12 @@ import wifiTechnology from "../public/wifi-technology.avif";
 import noConnection from "../public/no-connection.webp";
 import InfoSvg from "./components/svg/InfoSvg";
 import loadingGif from "../public/loading.gif";
+import Banner from "../public/celestron-big.webp"
 import axios from './api';
 import DeviceManager from "./components/DeviceManager";
 import TroubleshootingPage from "./components/TroubleshootingPage";
 import ReadyPage from "./components/ReadyPage";
+import Dialog from "./components/Dialog";
 
 const { ipcRenderer } = window.require('electron');
 
@@ -54,6 +56,7 @@ function App() {
   const [deviceFound, setDeviceFound] = useState(false);
   const [canOverrideModulePassphrase, setCanOverrideModulePassphrase] = useState(false);
   const [idle, setIdle] = useState(true);
+  const [modalOpen, setModalOpen] = useState(true);
 
   const networkSsidRef = useRef(null);
   const networkPassphraseRef = useRef(null);
@@ -84,6 +87,15 @@ function App() {
       setStatusMessage('MODULE CONFIGURED');
       setStatus('success');
     }
+  }
+
+  const handleSkyportalLinkClick = (e) => {
+    e.preventDefault();
+    ipcRenderer.send('open-skyportal-manual');
+  }
+  const handleEvolutionLinkClick = (e) => {
+    e.preventDefault();
+    ipcRenderer.send('open-evolution-manual');
   }
 
   // grabs the last 2 segments of mac address and uses the last 3 digits
@@ -267,8 +279,7 @@ function App() {
       passphraseRef: modulePassphraseRef,
       defaultName: moduleName,
       defaultPassphrase: modulePassphrase,
-      // passphraseReadOnly: !(canOverrideModulePassphrase),
-      passphraseReadOnly: true,
+      passphraseReadOnly: !(canOverrideModulePassphrase),
     }
   ];
 
@@ -299,6 +310,37 @@ function App() {
 
   return (
     <div id="inner-container">
+      <Dialog
+        isOpen={modalOpen}
+        hasCloseListeners={true}
+        onClose={() => setModalOpen(false)}
+      >
+        <div>
+          <div className="dialog-header">
+            <span>About This Application</span>
+            <span className="dialog-close-button" onClick={() => setModalOpen(false)}>X</span>
+          </div>
+          <hr></hr>
+          <div className="dialog-banner" >
+            <img src={Banner} alt="celestron-banner"/>
+          </div>
+          <div className="dialog-contents-container">
+            <p>The Celestron Wifi Password Manager is a tool that lets you configure network settings for your Celestron wifi accessories and wifi-enabled telescopes.</p>
+            <p>Clicking "Seek Devices" will search for an available wifi module. Please make sure your wifi module is accessible in the following ways:</p>
+            <ul className="dialog-list">
+              <li>Your wifi module is set to Direct Connect mode, and you are connected to the ad-hoc network (e.g. Celestron-###)</li>
+              <li>Your wifi module is in WLAN mode, and it is properly configured to a known network</li>
+            </ul>
+            <p>Refer to the manuals for the <a href="#" onClick={handleSkyportalLinkClick} target="_blank">SkyPortal</a> and <a href="#" onClick={handleEvolutionLinkClick} target="_blank">Evolution Mount</a> wifi modules.</p>
+            <p>FAQ</p>
+            <hr></hr>
+            <details tabIndex={-1}>
+              <summary>Hello</summary>
+              asdasdfasdf
+            </details>
+          </div>
+        </div>
+      </Dialog>
       <div id="navbar" className="celestron-background">
         <div className="navbar-item">
           <img className="celestron-icon-small" src={wifiTechnology} alt="Celestron Icon Small" />
@@ -308,7 +350,7 @@ function App() {
         </div>
         <div className="navbar-item navbar-info">
           <div className="celestron-icon-small">
-            <div className="clickable-icon">
+            <div className="clickable-icon" onClick={() => setModalOpen(true)}>
               <InfoSvg size={48} scale={0.50} fill="grey"/>
             </div>
           </div>
