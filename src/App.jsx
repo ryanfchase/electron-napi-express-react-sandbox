@@ -43,7 +43,7 @@ const content = {
   fakeModulePassphrase: testObject[0].modulePassphrase,
   sendDeviceInfo: "Configure Wifi Module",
   fakeDeviceStatus: "success",
-  deviceStatusSeekingDevices: "SEEKING DEVICES . . .",
+  deviceStatusSeekingDevices: "SEEKING DEVICES",
 };
 
 function App() {
@@ -72,7 +72,7 @@ function App() {
   const handleFinalSubmit = async () => {
 
     setStatus('')
-    setStatusMessage('SENDING CONFIGURATIONS . . .');
+    setStatusMessage('SENDING CONFIGURATIONS');
 
     const allRefsCurrent = [
       networkSsidRef,
@@ -156,7 +156,7 @@ function App() {
       }
       else {
         // here we've grabbed the last ip address
-        setStatusMessage('ATTEMPTING TO CONNECT ON LAST KNOWN IP ADDRESS. . .');
+        setStatusMessage('ATTEMPTING TO CONNECT ON LAST KNOWN IP ADDRESS');
         const lastAddress = res.data.lastAddress;
         console.log('last ip we saw was: ', lastAddress)
 
@@ -199,7 +199,7 @@ function App() {
         // we only arrive here if we weren't successful using previous ip address,
         // attempt to connect to 1.2.3.4 (assuming 1.2.3.4 wasn't our previous ip address)
         if (lastAddress !== '1.2.3.4') {
-          setStatusMessage('ATTEMPTING TO CONNECT VIA DIRECT CONNECT . . .');
+          setStatusMessage('ATTEMPTING TO CONNECT VIA DIRECT CONNECT');
           res = await axios.get('/connect', {
             params: {
               ip: '1.2.3.4',
@@ -244,7 +244,7 @@ function App() {
       }
 
       // if all prior tcp connection attempts fail, attempt to get a broadcast response
-      setStatusMessage('ATTEMPTING TO FIND DEVICES ON THE NETWORK . . .');
+      setStatusMessage('ATTEMPTING TO FIND DEVICES ON THE NETWORK');
       let broadcast = await axios.get('/broadcast');
       console.log(`express/broadcast gets`, broadcast.data);
 
