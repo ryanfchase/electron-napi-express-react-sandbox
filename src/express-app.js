@@ -134,7 +134,7 @@ module.exports = (userDataDir) => {
       { name: 'wlan.static.netmask' },
     ]
     let moduleResponse = await tryTcp(ip, port, commandList, 'get');
-    logger.info('in connect, moduleResponse was: ' + JSON.stringify(moduleResponse));
+    logger.verbose('in connect, moduleResponse was: ' + JSON.stringify(moduleResponse));
     if (moduleResponse.error) {
       // res.status(500).send({ error: configs.error , transactionId });
       res.json({ error: moduleResponse.error , transactionId });

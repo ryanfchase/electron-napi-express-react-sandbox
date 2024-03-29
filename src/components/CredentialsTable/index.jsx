@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./index.css";
 
 const CredentialsTable = ({ credentialName, defaultName, defaultPassphrase, ssidRef, passphraseRef, nameReadOnly=false}) => {
   const [name, setName] = useState(defaultName);

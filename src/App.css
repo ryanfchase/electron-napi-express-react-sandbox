@@ -2,6 +2,12 @@ body {
   all: unset;
 }
 
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 * {
   letter-spacing: -0.03em;
 }
@@ -20,10 +26,6 @@ body {
   background: #fff;
   font-family: Open Sans,Arial,Helvetica,sans-serif;
 }
-
-/* #inner-container * {
-  border: 0.1em dotted grey;
-} */
 
 .celestron-control-button {
   cursor: pointer;
@@ -149,49 +151,6 @@ body {
   align-items: center;
 }
 
-.device-detail {
-  text-transform: lowercase;
-  color: #707070;
-}
-
-.device-name {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-top: 2.5em;
-  padding-left: 12em;
-}
-
-.device-icon {
-  display: flex;
-  align-items: center;
-  border-radius: 0.333em;
-  padding: .25em;
-  width: fit-content;
-  text-align: -webkit-right;
-}
-
-.device-title {
-  font-weight: bold;
-  font-size: 2em;
-  text-transform: uppercase;
-  text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
-}
-
-/* Tables */
-
-.device-name-table {
-  width: 100%;
-  table-layout: fixed;
-  margin: 1em 0;
-}
-
-.credential-table {
-  width: 100%;
-  table-layout: fixed;
-  margin: 1em 0;
-}
-
 .first-col {
   padding-right: 1.25em;
   text-align: -webkit-right;
@@ -204,18 +163,10 @@ body {
   text-align: right;
 }
 
-.credential-input {
-  padding: 3px 5px;
-  letter-spacing: normal;
-}
-
 .credential-input-hidden {
   letter-spacing: 3px;
 }
 
-.final-submit-section {
-  margin-top: 2em;
-}
 /* Icons and Backgrounds  */
 .celestron-icon-small {
   min-height: 2em;

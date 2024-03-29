@@ -1,0 +1,25 @@
+.device-name-table {
+  width: 100%;
+  table-layout: fixed;
+  margin: 1em 0;
+}
+
+.device-icon {
+  display: flex;
+  align-items: center;
+  border-radius: 0.333em;
+  padding: .25em;
+  width: fit-content;
+  text-align: -webkit-right;
+}
+
+.device-title {
+  font-weight: bold;
+  font-size: 2em;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+}
+
+.final-submit-section {
+  margin-top: 2em;
+}

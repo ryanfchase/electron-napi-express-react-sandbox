@@ -1,6 +1,7 @@
 import React from "react";
 import WifiSvg from "../svg/WifiSvg";
 import CredentialsTable from "../CredentialsTable";
+import "./index.css";
 
 // const DeviceManager = ({networkName, networkPassphrase, moduleName, modulePassphrase}) => {
 const DeviceManager = ({ moduleName, credentials, handleFinalSubmit }) => {

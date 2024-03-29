@@ -38,7 +38,7 @@ const content = {
   fakeModulePassphrase: testObject[0].modulePassphrase,
   sendDeviceInfo: "Configure Wifi Module",
   fakeDeviceStatus: "success",
-  fakeDeviceStatusMessage: "SEEKING DEVICES . . .",
+  deviceStatusSeekingDevices: "SEEKING DEVICES . . .",
 };
 
 function App() {
@@ -47,7 +47,7 @@ function App() {
   const [moduleName, setModuleName] = useState(content.fakeModuleName);
   const [modulePassphrase, setModulePassphrase] = useState(content.fakeModulePassphrase);
   const [status, setStatus] = useState('');
-  const [statusMessage, setStatusMessage] = useState(content.fakeDeviceStatusMessage)
+  const [statusMessage, setStatusMessage] = useState(content.deviceStatusSeekingDevices)
   const [deviceFound, setDeviceFound] = useState(false);
 
   const networkSsidRef = useRef(null);
@@ -67,12 +67,6 @@ function App() {
   }, []);
 
   const handleFinalSubmit = async () => {
-    console.log('REF INFO: ', {
-      networkSsid: networkSsidRef.current.value,
-      networkPassphrase: networkPassphraseRef.current.value,
-      moduleSsid: moduleSsidRef.current.value,
-      modulePassphrase: modulePassphraseRef.current.value 
-    });
     setStatus('')
     setStatusMessage('SENDING CONFIGURATIONS . . .');
 
@@ -92,11 +86,12 @@ function App() {
     }
   }
 
+  // grabs
   const macAddressToModuleName = (mac) => mac.split(':').slice(-2).join('').slice(-3);
   const handleSeekDevices = async () => {
     setDeviceFound(false);
     setStatus('');
-    setStatusMessage(content.fakeDeviceStatusMessage); // this is actually ok
+    setStatusMessage(content.deviceStatusSeekingDevices);
     
     // reset all fields, just to be safe
     inputRefs.forEach(ref => {

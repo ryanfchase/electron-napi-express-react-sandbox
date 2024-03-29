@@ -1,0 +1,19 @@
+.credential-table {
+  width: 100%;
+  table-layout: fixed;
+  margin: 1em 0;
+}
+
+.device-detail {
+  text-transform: lowercase;
+  color: #707070;
+}
+
+.credential-input {
+  padding: 3px 5px;
+  letter-spacing: normal;
+}
+
+.credential-error {
+  /* todo */
+}

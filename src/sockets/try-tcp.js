@@ -78,7 +78,7 @@ const readPacket = (nread, data) => {
 }
 
 const handleError = (error, mode) => {
-  logger.warn("error occured in mode " + mode);
+  logger.warn("error occured in TCP, mode " + mode + ", error was: " + JSON.stringify(error) );
   clearTimeout(timer);
   rejecter(error);
 }

@@ -39,7 +39,7 @@ const tryUdp = (broadcastPort, timeout=6000) => {
         if (message.includes('Origin')) {
           // handle origin
         }
-        else if (message.includes('ZENTRI')) {
+        else if (message.includes('AMW007')) {
           // handle skyportal
           let repsonse = JSON.parse(message);
           moduleConfigs = {...repsonse, ...rinfo};
