@@ -34,6 +34,7 @@ const testObject = [
   }
 ];
 
+// this is a relic, better extract the useful strings and get rid of the rest
 const content = {
   headerText: "Celestron Wifi Password Manager",
   fakeNetworkName: testObject[0].networkName,
@@ -69,8 +70,38 @@ function App() {
   }, []);
 
   const handleFinalSubmit = async () => {
+
     setStatus('')
     setStatusMessage('SENDING CONFIGURATIONS . . .');
+
+    const allRefsCurrent = [
+      networkSsidRef,
+      networkPassphraseRef,
+      modulePassphraseRef,
+    ].every(ref => ref.current !== undefined && ref.current.value !== undefined)
+
+    if (!allRefsCurrent) {
+      setStatus('error');
+      setStatusMessage("INTERNAL APPLICATION ERROR, PLEASE TRY AGAIN");
+      return;
+    }
+    if (networkSsidRef.current.value === '') {
+      setStatus('warning');
+      setStatusMessage("NETWORK SSID NOT AN OPTIONAL FIELD. PLEASE SUPPLY A NETWORK");
+      return;
+    }
+    let formNetworkPassphrase = networkPassphraseRef.current.value;
+    if (formNetworkPassphrase !== '' && formNetworkPassphrase.length < 8) {
+      setStatus('warning');
+      setStatusMessage("NON-EMPTY NETWORK PASSWORD MUST BE AT LEAST 8 CHARACTERS");
+      return;
+    }
+    let formModulePassphrase = modulePassphraseRef.current.value;
+    if (formModulePassphrase !== '' && formModulePassphrase.length < 8) {
+      setStatus('warning');
+      setStatusMessage("NON-EMPTY MODULE PASSWORD MUST BE AT LEAST 8 CHARACTERS");
+      return;
+    }
 
     const res = await axios.post('/configure', {
       networkSsid: networkSsidRef.current.value,
@@ -110,6 +141,7 @@ function App() {
 
     // disable the seek device button while we are seeking
     if (seekDeviceButtonRef.current) {
+      console.log('disabling button')
       seekDeviceButtonRef.current.disabled = true;
     }
     
@@ -155,6 +187,12 @@ function App() {
           if (res.data['canOverrideModulePassphrase'])
             setCanOverrideModulePassphrase(true);
 
+          // reenable seek devices button
+          if (seekDeviceButtonRef.current) {
+            console.log('reenabling button')
+            seekDeviceButtonRef.current.disabled = false;
+          }
+
           return;
         }
 
@@ -191,6 +229,12 @@ function App() {
               address: '1.2.3.4',
             });
             console.log('post express/last-address returns ' , updateLastIpRes.data);
+
+            // reenable seek devices button
+            if (seekDeviceButtonRef.current) {
+              console.log('reenabling button')
+              seekDeviceButtonRef.current.disabled = false;
+            }
             return;
           }
         }
@@ -246,6 +290,12 @@ function App() {
           });
 
           console.log('post express/last-address returns ' , updateLastIpRes.data);
+
+          // reenable seek devices button
+          if (seekDeviceButtonRef.current) {
+            console.log('reenabling button')
+            seekDeviceButtonRef.current.disabled = false;
+          }
           return;
         }
       }
