@@ -145,8 +145,7 @@ body {
 #wifi-device-details {
   display: flex;
   flex-direction: column;
-  /* padding: 0.5em 2.4em 2em; /*small screen size */
-  padding: 0.5em 8em 3em; /*medium screen size*/
+  padding: 0.5em 2em 3em;
   align-items: center;
 }
 
