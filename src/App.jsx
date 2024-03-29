@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
-import celestronSmall from "../public/celestron-small-light.png";
 import wifiTechnology from "../public/wifi-technology.avif";
-import noConnection from "../public/no-connection.webp";
+import Warning from "./components/svg/Warning";
 import InfoSvg from "./components/svg/InfoSvg";
 import loadingGif from "../public/loading.gif";
 import Banner from "../public/celestron-big.webp"
@@ -325,7 +324,15 @@ function App() {
             <img src={Banner} alt="celestron-banner"/>
           </div>
           <div className="dialog-contents-container">
-            <p>The Celestron Wifi Password Manager is a tool that lets you configure network settings for your Celestron wifi accessories and wifi-enabled telescopes.</p>
+            <p>The Celestron Wifi Password Manager is a tool that lets you configure network settings for your Celestron wifi accessories and wifi-enabled telescopes. Configurations include: </p>
+            <ul className="dialog-list">
+              <li>Network SSID and passphrase for wifi module WLAN mode</li>
+              <li>Direct connect passphrase for secure direct connect mode</li>
+            </ul>
+            <div className="dialog-warning">
+                <Warning style={{marginRight: "8px", paddingLeft: "1em", overflow: "visible" }}size={24} fill={"#d29922"} />
+                <span>As of the latest release, we require you to have the latest firmware for your wifi module. Please be sure to download it <a href="#" target="_blank">here</a> and install via CFM</span>
+              </div>
             <p>Clicking "Seek Devices" will search for an available wifi module. Please make sure your wifi module is accessible in the following ways:</p>
             <ul className="dialog-list">
               <li>Your wifi module is set to Direct Connect mode, and you are connected to the ad-hoc network (e.g. Celestron-###)</li>

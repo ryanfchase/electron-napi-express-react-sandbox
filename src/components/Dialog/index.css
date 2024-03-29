@@ -45,6 +45,21 @@ summary {
 .dialog-banner img {
 }
 
+.dialog-warning {
+  border-color: hsl(40.11deg 90.82% 38.43% / 40%);
+  background-color: rgba(187, 128, 9, 0.15);
+  padding: 1.5em 0;
+  display: flex;
+  justify-content: flex-start;
+  border-radius: 0.25em;
+  align-items: center;
+}
+
+.dialog-text {
+  padding: 1.5em 0;
+  margin: 0 1em;
+}
+
 .inner-container {
   display: flex;
   flex-direction: column;
@@ -57,9 +72,4 @@ summary {
 
 dialog::backdrop {
   background: rgb(99 110 122 / 20%); /* from github's delete repo overlay */
-}
-
-.dialog-text {
-  padding: 1.5em 0;
-  margin: 0 1em;
 }
