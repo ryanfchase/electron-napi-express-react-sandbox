@@ -2,7 +2,7 @@ const net = require('node:net');
 const acceptedModules = require('../../config/accepted-modules.json');
 const winston = require('winston');
 
-const logger = winston.createLogger({
+let logger = winston.createLogger({
   level: 'verbose',
   format: winston.format.json(),
   // defaultMeta: { service: 'user-service' },
@@ -68,7 +68,7 @@ const readPacket = (nread, data) => {
       else if (message !== '') {
         clearTimeout(timer);
         printMessage(message, INPUT_MODE);
-        resolver(message);
+        if (resolver) resolver(message);
       }
     });
   }
@@ -80,24 +80,33 @@ const readPacket = (nread, data) => {
 const handleError = (error, mode) => {
   logger.warn("error occured in TCP, mode " + mode + ", error was: " + JSON.stringify(error) );
   clearTimeout(timer);
-  rejecter(error);
+  if (rejecter) rejecter(error);
 }
 
 const connect = (host, port, timeout) => {
   return new Promise((resolve, reject) => {
-    const client = net.createConnection({port, host, onread: {
-      buffer: Buffer.alloc(4 * 1024),
-    }}, () => {
-      _host = host;
-      _port = port;
-      clearTimeout(timer);
-      resolve(client);
-    })
+    try {
+      const client = net.createConnection({port, host, onread: {
+        buffer: Buffer.alloc(4 * 1024),
+      }}, () => {
+        _host = host;
+        _port = port;
+        clearTimeout(timer);
+        resolve(client);
+      });
 
-    const timer = setTimeout(() => {
-      client.destroy();
-      reject(new Error('Timed out while attempting to establish a TCP connection to module'));
-    }, timeout);
+      client.on('data', data => readPacket(data.length, data));
+      client.on('error', error => handleError(error, INPUT_MODE));
+
+      const timer = setTimeout(() => {
+        client.destroy();
+        reject(new Error('Timed out while attempting to establish a TCP connection to module'));
+      }, timeout);
+    }
+    catch (error) {
+      logger.warn('exception occurred while attempting to establish TCP connection')
+      reject(new Error('exception occurred while attempting to establish TCP connection'));
+    }
   })
 }
 
@@ -128,10 +137,8 @@ const tryTcp = async (host, port, commands, mode, timeoutConnect=3000, timeoutRe
   }
 
   try {
-    logger.verbose('in tcp with ' + JSON.stringify({host, port, mode, commands}));
+    logger.verbose('in tcp with ' + JSON.stringify({host, port, mode}));
     const client = await connect(host, port, timeoutConnect);
-    client.on('data', data => readPacket(data.length, data));
-    client.on('error', error => handleError(error, INPUT_MODE));
 
     INPUT_MODE = 'version';
     moduleConfigs['version'] = await sendAndReceive(client, 'version\r\n');

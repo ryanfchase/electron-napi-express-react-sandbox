@@ -8,6 +8,7 @@ const expressWinston = require('express-winston');
 
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const { hostname } = require('node:os');
 
 module.exports = (userDataDir) => {
 
@@ -72,35 +73,43 @@ module.exports = (userDataDir) => {
 
   app.use(bodyParser.json())
 
-  app.get('/', async (req, res) => {
-    let store = await getStore(logger);
-    store.sandboxValue++;
-    let updatedStore = await updateStore(store, logger);
+  app.get('/', (req, res) => {
     res.send('Hello World! -- txnId: (' + JSON.stringify(updatedStore) + "), " + transactionId++);
   })
 
   app.get('/last-address', async (req, res) => {
-    let store = await getStore(logger);
-    if (store.lastAddress) {
-      res.json({lastAddress: store.lastAddress, transactionId});
+    try {
+      let store = await getStore(logger);
+      if (store.lastAddress) {
+        res.json({lastAddress: store.lastAddress, transactionId});
+      }
+      else {
+        res.json({ error: 'could not find last address in data store' , transactionId });
+      }
     }
-    else {
-      // res.status(500).send({ error: 'could not find last address in data store' , transactionId });
-      res.json({ error: 'could not find last address in data store' , transactionId });
+    catch (error) {
+      logger.warn(`exception caught in POST /last-address with req.body.address ${req.body.address} :: ${JSON.stringify(error)}`)
+      res.json({ error: 'could not find last address in data store', transactionId });
     }
     transactionId++;
   })
 
   app.post('/last-address', async (req, res) => {
     logger.info('printing req body ' + req.body);
-    let store = await getStore(logger);
-    if (req.body.address) {
-      store['lastAddress'] = req.body.address;
-      await updateStore(store, logger);
-      res.json({ success: true })
+    try {
+      let store = await getStore(logger);
+      if (req.body.address) {
+        store['lastAddress'] = req.body.address;
+        await updateStore(store, logger);
+        res.json({ success: true })
+      }
+      else {
+        res.json({ error: 'Could not find address in req body', transactionId})
+      }
     }
-    else {
-      res.json({ error: 'Could not find address in req body', transactionId})
+    catch (error) {
+      logger.warn(`exception caught in POST /last-address with req.body.address ${req.body.address} :: ${JSON.stringify(error)}`)
+      res.json({ error: 'Could not update address in req body', transactionId });
     }
     transactionId++;
   })
@@ -117,6 +126,7 @@ module.exports = (userDataDir) => {
       }
     }
     catch(error) {
+      logger.warn(`exception caught in /broadcast @ on ${broadcastPort}: ${JSON.stringify(error)}`)
       res.json({error: error.message, transactionId});
     }
     transactionId++;
@@ -133,14 +143,20 @@ module.exports = (userDataDir) => {
       { name: 'wlan.static.gateway' },
       { name: 'wlan.static.netmask' },
     ]
-    let moduleResponse = await tryTcp(ip, port, commandList, 'get');
-    logger.verbose('in connect, moduleResponse was: ' + JSON.stringify(moduleResponse));
-    if (moduleResponse.error) {
-      // res.status(500).send({ error: configs.error , transactionId });
-      res.json({ error: moduleResponse.error , transactionId });
+    try {
+      let moduleResponse = await tryTcp(ip, port, commandList, 'get');
+      logger.verbose(`in /connect @ ${ip}:${port}, moduleResponse was: ${JSON.stringify(moduleResponse)}`);
+      if (moduleResponse.error) {
+        // res.status(500).send({ error: configs.error , transactionId });
+        res.json({ error: moduleResponse.error , transactionId });
+      }
+      else {
+        res.json({...moduleResponse, transactionId});
+      }
     }
-    else {
-      res.json({...moduleResponse, transactionId});
+    catch(error) {
+      logger.warn(`exception caught in /connect @ ${ip}:${port}: ${JSON.stringify(error)}`)
+      res.json({error: error.message, transactionId})
     }
     transactionId++;
   })
@@ -167,12 +183,18 @@ module.exports = (userDataDir) => {
       { name: 'wlan.static.netmask', arg: "0.0.0.0" },
     ]
 
-    let moduleResponse = await tryTcp(store.lastAddress, port, commandList, 'set');
-    if (moduleResponse.error) {
-      res.json({ error: moduleResponse.error, transactionId});
+    try {
+      let moduleResponse = await tryTcp(store.lastAddress, port, commandList, 'set');
+      if (moduleResponse.error) {
+        res.json({ error: moduleResponse.error, transactionId});
+      }
+      else {
+        res.json({...moduleResponse, transactionId });
+      }
     }
-    else {
-      res.json({...moduleResponse, transactionId });
+    catch (error) {
+      logger.warn(`exception caught in /configure: ${JSON.stringify(error)}`)
+      res.json({error: error.message, transactionId})
     }
     transactionId++;
   })

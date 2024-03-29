@@ -38,7 +38,7 @@ else {
 const appName = app.getPath("exe");
 const expressAppUrl = `http://127.0.0.1:${expressPort}`;
 const WINDOWS_OS = appName.endsWith(`${name}.exe`);
-let mainWindow, backgroundWindow;
+let mainWindow, splashScreen;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (electronSquirrelStartup) {
@@ -51,10 +51,15 @@ const createWindow = () => {
     width: 900,
     height: 575,
     title: "Celestron Wifi Password Manager",
-    icon: "./public/celestron-small.jpg", // not so sure about this
+    icon: path.join(__dirname, "./celestron-small-light.png"),
     autoHideMenuBar: true,
+    show: false,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+      // there is a way to avoid doing this, but this is the fast way
+      // to integrate ipcRenderer into the frontend code (not exclusively a React problem)
+      nodeIntegration: true,
+      contextIsolation: false,
     },
   });
 
@@ -67,6 +72,24 @@ const createWindow = () => {
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
+
+  // Splash Screen
+  splashScreen = new BrowserWindow({
+    width: 500,
+    height: 300,
+    frame: false,
+    alwaysOnTop: true
+  })
+
+  splashScreen.loadFile(path.join(__dirname, "./splash.html"));
+  splashScreen.center();
+
+  // setTimeout(() => {
+  //   splashScreen.close(); // todo - put back
+  //   mainWindow.center();
+  //   mainWindow.show();
+  //   splashScreen = null; // todo - put back
+  // }, 5000);
 };
 
 // This method will be called when Electron has finished
@@ -93,3 +116,13 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+// IPC Methods
+ipcMain.on('react-ready', (event, arg) => {
+  if (splashScreen) {
+    mainWindow.center();
+    mainWindow.show();
+    splashScreen.close();
+    splashScreen = null;
+  }
+})

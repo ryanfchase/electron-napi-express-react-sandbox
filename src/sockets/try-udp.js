@@ -20,7 +20,7 @@ const tryUdp = (broadcastPort, timeout=6000) => {
 
     const timer = setTimeout(() => {
       logger.verbose(`connection timed out while establish UDP connection to port=${broadcastPort}`);
-      client.close();
+      client?.close();
       reject({ message: 'connection timed out while connecting via udp, could not detect broadcast' }); // package as { error: { message: '... }}
     }, timeout);
 
@@ -61,7 +61,7 @@ const tryUdp = (broadcastPort, timeout=6000) => {
       logger.warn("In tryUdp -- error was: " + error.message);
       clearTimeout(timer);
       reject({message: error.message}); // package as { error: { message: '... }}
-      client.close();
+      client?.close();
     }
   });
 }

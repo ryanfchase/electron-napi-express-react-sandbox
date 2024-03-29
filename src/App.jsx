@@ -4,10 +4,12 @@ import celestronSmall from "../public/celestron-small-light.png";
 import wifiTechnology from "../public/wifi-technology.avif";
 import noConnection from "../public/no-connection.webp";
 import InfoSvg from "./components/svg/InfoSvg";
-import loading from "../public/loading.gif";
+import loadingGif from "../public/loading.gif";
 import axios from './api';
 import DeviceManager from "./components/DeviceManager";
+import TroubleshootingPage from "./components/TroubleshootingPage";
 
+const { ipcRenderer } = window.require('electron');
 
 const testObject = [
   {
@@ -42,13 +44,14 @@ const content = {
 };
 
 function App() {
-  const [networkName, setNetworkName] = useState(content.fakeNetworkName);
-  const [networkPassphrase, setNetworkPassphrase] = useState(content.fakeNetworkPassphrase);
-  const [moduleName, setModuleName] = useState(content.fakeModuleName);
-  const [modulePassphrase, setModulePassphrase] = useState(content.fakeModulePassphrase);
+  const [networkName, setNetworkName] = useState('');
+  const [networkPassphrase, setNetworkPassphrase] = useState('');
+  const [moduleName, setModuleName] = useState('');
+  const [modulePassphrase, setModulePassphrase] = useState('');
   const [status, setStatus] = useState('');
-  const [statusMessage, setStatusMessage] = useState(content.deviceStatusSeekingDevices)
+  const [statusMessage, setStatusMessage] = useState('READY')
   const [deviceFound, setDeviceFound] = useState(false);
+  const [idle, setIdle] = useState(true);
 
   const networkSsidRef = useRef(null);
   const networkPassphraseRef = useRef(null);
@@ -63,7 +66,8 @@ function App() {
   ]
 
   useEffect(() => {
-    handleSeekDevices();
+    // handleSeekDevices(); // uncomment to launch with seek device call
+    ipcRenderer.send('react-ready');
   }, []);
 
   const handleFinalSubmit = async () => {
@@ -86,74 +90,125 @@ function App() {
     }
   }
 
-  // grabs
+  // grabs the last 2 segments of mac address and uses the last 3 digits
   const macAddressToModuleName = (mac) => mac.split(':').slice(-2).join('').slice(-3);
+
+  // main driver of seek devices. attempts to connect to last known ip, then 1.2.3.4
+  // failing, those, we attempt to listen for a broadcast from the module and connect wlan
   const handleSeekDevices = async () => {
     setDeviceFound(false);
+    setIdle(false);
     setStatus('');
     setStatusMessage(content.deviceStatusSeekingDevices);
     
-    // reset all fields, just to be safe
-    inputRefs.forEach(ref => {
-      if (ref && ref.current)
-        ref.current.value = '';
-    });
-
+    // reuse this response variable for axios calls (can be refactored)
     let res;
 
-    // first attempt to get last ip address
-    res = await axios.get('/last-address')
-    if (res.data.error) {
-      console.log('could not obtain last ip-address')
-    }
-    else {
-      // here we've grabbed the last ip address
-      setStatusMessage('ATTEMPTING TO CONNECT ON LAST KNOWN IP . . .');
-      const lastAddress = res.data.lastAddress;
-      console.log('last ip we saw was: ', lastAddress)
-
-      // attempt to connect via that ip address
-      res = await axios.get('/connect', {
-        params: {
-          ip: res.data.lastAddress,
-          port: '3000',
-        }
-      })
+    try {
+      // first attempt to get last ip address
+      res = await axios.get('/last-address')
       if (res.data.error) {
-        console.log('unable to connect to ', lastAddress);
+        console.log('could not obtain last ip-address')
       }
       else {
-        // we've successfully established a connection with our last known ip address
-        console.log('response to last ip res was: ', res);
+        // here we've grabbed the last ip address
+        setStatusMessage('ATTEMPTING TO CONNECT ON LAST KNOWN IP ADDRESS. . .');
+        const lastAddress = res.data.lastAddress;
+        console.log('last ip we saw was: ', lastAddress)
 
-        // set state and return from the event handler
-        setNetworkName(res.data['wlan.ssid']);
-        setNetworkPassphrase(res.data['wlan.passkey']);
-        setModuleName(`Celestron-${macAddressToModuleName(res.data['wlan.mac'])}`);
-        setModulePassphrase(res.data['softap.passkey']);
-        setStatus('success');
-        setStatusMessage('MODULE FOUND');
-        setDeviceFound(true);
-        return;
-      }
-
-      // we only arrive here if we weren't successful using previous ip address,
-      // attempt to connect to 1.2.3.4 (assuming 1.2.3.4 wasn't our previous ip address)
-      if (lastAddress !== '1.2.3.4') {
-        setStatusMessage('ATTEMPTING TO CONNECT VIA DIRECT CONNECT . . .');
+        // attempt to connect via that ip address
         res = await axios.get('/connect', {
           params: {
-            ip: '1.2.3.4',
+            ip: res.data.lastAddress,
             port: '3000',
           }
         })
         if (res.data.error) {
-          console.log('unable to connect to 1.2.3.4');
+          console.log('unable to connect to ', lastAddress);
         }
         else {
-          console.log('response to direct connect (1.2.3.4) res was: ', res);
+          // we've successfully established a connection with our last known ip address
+          console.log('response to last ip res was: ', res);
 
-          // do something
+          // set state and return from the event handler
+          setNetworkName(res.data['wlan.ssid']);
+          setNetworkPassphrase(res.data['wlan.passkey']);
+          setModuleName(`Celestron-${macAddressToModuleName(res.data['wlan.mac'])}`);
+          setModulePassphrase(res.data['softap.passkey']);
+          setStatus('success');
+          setStatusMessage('MODULE FOUND');
+          setDeviceFound(true);
+          return;
+        }
+
+        // we only arrive here if we weren't successful using previous ip address,
+        // attempt to connect to 1.2.3.4 (assuming 1.2.3.4 wasn't our previous ip address)
+        if (lastAddress !== '1.2.3.4') {
+          setStatusMessage('ATTEMPTING TO CONNECT VIA DIRECT CONNECT . . .');
+          res = await axios.get('/connect', {
+            params: {
+              ip: '1.2.3.4',
+              port: '3000',
+            }
+          })
+          if (res.data.error) {
+            console.log('unable to connect to 1.2.3.4');
+          }
+          else {
+            console.log('response to direct connect (1.2.3.4) res was: ', res);
+
+            // do something
+            setNetworkName(res.data['wlan.ssid']);
+            setNetworkPassphrase(res.data['wlan.passkey']);
+            setModuleName(`Celestron-${macAddressToModuleName(res.data['wlan.mac'])}`);
+            setModulePassphrase(res.data['softap.passkey']);
+            setStatus('success');
+            setStatusMessage('MODULE FOUND');
+            setDeviceFound(true);
+
+            // since we found module on 1.2.3.4, save as our last known ip address
+            let updateLastIpRes = await axios.post('/last-address', {
+              address: '1.2.3.4',
+            });
+            console.log('post express/last-address returns ' , updateLastIpRes.data);
+            return;
+          }
+        }
+        else {
+          console.log('skipping DC follow up connect attempt since our last known ip was 1.2.3.4')
+        }
+      }
+
+      // if all prior tcp connection attempts fail, attempt to get a broadcast response
+      setStatusMessage('ATTEMPTING TO FIND DEVICES ON THE NETWORK . . .');
+      let broadcast = await axios.get('/broadcast');
+      console.log(`express/broadcast gets`, broadcast.data);
+
+      if (broadcast.data.error || broadcast.data.address === undefined) { // we can probably remove the undefined check, check prev console log
+        // unable to find broadcast signal, failure...
+        console.log("unable to find _any_ signal... cannot proceed");
+        console.log("MAKE SURE YOU ARE CONNECTED TO THE SAME WIFI :)")
+        setStatus('error')
+        setStatusMessage('UNABLE TO FIND WIFI MODULES ON WLAN');
+      }
+      else {
+        // take response from broadcast and attempt to connect
+        let port = '3000';
+        res = await axios.get(`/connect`, {
+          params: {
+            ip: broadcast.data.address,
+            port: port,
+          }
+        });
+        console.log(`express/connect @ ${broadcast.data.address}:${port}`, res.data);
+
+        if (res.data.error) {
+          // unable to connect to the broadcast's ip address (maybe try a different port)
+          console.log('no response attempting to talk to broadcasted ip address... cannot proceed')
+          setStatus('error')
+          setStatusMessage('UNABLE TO CONNECT TO MODULES VIA WLAN');
+        }
+        else {
           setNetworkName(res.data['wlan.ssid']);
           setNetworkPassphrase(res.data['wlan.passkey']);
           setModuleName(`Celestron-${macAddressToModuleName(res.data['wlan.mac'])}`);
@@ -162,65 +217,20 @@ function App() {
           setStatusMessage('MODULE FOUND');
           setDeviceFound(true);
 
-          // since we found module on 1.2.3.4, save as our last known ip address
+          // since we found an ip address, save it...
           let updateLastIpRes = await axios.post('/last-address', {
-            address: '1.2.3.4',
+            address: broadcast.data.address,
           });
+
           console.log('post express/last-address returns ' , updateLastIpRes.data);
           return;
         }
       }
-      else {
-        console.log('skipping DC follow up connect attempt since our last known ip was 1.2.3.4')
-      }
     }
-
-    // if all prior tcp connection attempts fail, attempt to get a broadcast response
-    setStatusMessage('ATTEMPTING TO FIND DEVICES ON THE NETWORK . . .');
-    let broadcast = await axios.get('/broadcast');
-    console.log(`express/broadcast gets`, broadcast.data);
-
-    if (broadcast.data.error || broadcast.data.address === undefined) { // we can probably remove the undefined check, check prev console log
-      // unable to find broadcast signal, failure...
-      console.log("unable to find _any_ signal... cannot proceed");
-      console.log("MAKE SURE YOU ARE CONNECTED TO THE SAME WIFI :)")
-      setStatus('error')
-      setStatusMessage('UNABLE TO FIND WIFI MODULES ON WLAN');
-    }
-    else {
-      // take response from broadcast and attempt to connect
-      let port = '3000';
-      res = await axios.get(`/connect`, {
-        params: {
-          ip: broadcast.data.address,
-          port: port,
-        }
-      });
-      console.log(`express/connect @ ${broadcast.data.address}:${port}`, res.data);
-
-      if (res.data.error) {
-        // unable to connect to the broadcast's ip address (maybe try a different port)
-        console.log('no response attempting to talk to broadcasted ip address... cannot proceed')
-        setStatus('error')
-        setStatusMessage('UNABLE TO CONNECT TO MODULES VIA WLAN');
-      }
-      else {
-        setNetworkName(res.data['wlan.ssid']);
-        setNetworkPassphrase(res.data['wlan.passkey']);
-        setModuleName(`Celestron-${macAddressToModuleName(res.data['wlan.mac'])}`);
-        setModulePassphrase(res.data['softap.passkey']);
-        setStatus('success');
-        setStatusMessage('MODULE FOUND');
-        setDeviceFound(true);
-
-        // since we found an ip address, save it...
-        let updateLastIpRes = await axios.post('/last-address', {
-          address: broadcast.data.address,
-        });
-
-        console.log('post express/last-address returns ' , updateLastIpRes.data);
-        return;
-      }
+    catch(error) {
+      console.log('Unable to communicate with backend... attempt to reset the app');
+      setStatusMessage('UNEXPECTED ERROR. PLEASE RESTART APPLICATION');
+      setStatus('error');
     }
   }
 
@@ -241,6 +251,32 @@ function App() {
       defaultPassphrase: modulePassphrase,
     }
   ];
+
+  // conditionally render the page's contents based on state
+  let mainPageContent;
+  if (idle) {
+    mainPageContent = (
+      <div>
+        <p>Click "Seek Devices" to begin.</p>
+      </div>);
+  }
+  else if (deviceFound) {
+    mainPageContent = (
+      <DeviceManager
+        credentials={credentialsList}
+        moduleName={moduleName}
+        handleFinalSubmit={handleFinalSubmit}/>);
+  }
+  else if (status === 'error') {
+    mainPageContent = (
+      <TroubleshootingPage/>);
+  }
+  else {
+    mainPageContent = (
+      <div className="loading-gif-container">
+        <img className="loading-gif" src={loadingGif} alt="loading-devices"/>
+      </div>);
+  }
 
   return (
     <div id="inner-container">
@@ -270,26 +306,7 @@ function App() {
         </div>
       </div>
       <div id="wifi-device-details">
-        { deviceFound ? (
-          <DeviceManager
-            credentials={credentialsList}
-            moduleName={moduleName}
-            handleFinalSubmit={handleFinalSubmit}/>
-        ) :
-        status === 'error' ?
-        (<div>
-          <p>There were no devices viewable on the network. Please follow these troubleshooting steps to make your device identifiable:</p>
-          <ul>
-            <li>Ensure that the wifi module is plugged in correctly, and the mount is on.</li>
-            <li>If the wifi module is in direct connect, ensure you are connected to the ad-hoc network</li>
-            <li>If the wifi module is in WLAN, ensure you are connected to the paired network</li>
-            <li>If the above steps do not resolve the issue, attempt to reset the wifi module,see instructions [here]</li>
-          </ul>
-        </div>) :
-        (<div className="loading-gif-container">
-            <img className="loading-gif" src={loading} alt="loading-devices"/>
-          </div>
-        )}
+        { mainPageContent }
       </div>
     </div>
   );

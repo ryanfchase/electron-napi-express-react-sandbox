@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Splash Page</title>
+</head>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+  }
+
+  /* HTML: <div class="loader"></div> */
+  .loader {
+    width: 45px;
+    aspect-ratio: 1;
+    --c: no-repeat linear-gradient(#fff 0 0);
+    background: 
+      var(--c) 0%   100%,
+      var(--c) 50%  100%,
+      var(--c) 100% 100%;
+    animation: l2 1s infinite linear;
+  }
+  @keyframes l2 {
+    0%  {background-size: 20% 100%,20% 100%,20% 100%}
+    20% {background-size: 20% 60% ,20% 100%,20% 100%}
+    40% {background-size: 20% 80% ,20% 60% ,20% 100%}
+    60% {background-size: 20% 100%,20% 80% ,20% 60% }
+    80% {background-size: 20% 100%,20% 100%,20% 80% }
+    100%{background-size: 20% 100%,20% 100%,20% 100%}
+  }
+
+  span {
+    margin-bottom: 1.0em;
+  }
+
+  #splash-container {
+    user-select: none;
+    border: 2px solid #ccc;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-image: linear-gradient(180deg, #fd8204, #ffad33);
+  }
+
+  #image {
+    border-radius: 6px;
+    height: 42px;
+    margin-right: 12px;
+  }
+
+  #first-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #title {
+    font-size: 3rem;
+    font-weight: bold;
+    font-style: italic;
+    font-stretch: ultra-expanded;
+    text-shadow: 8px 3px 4px rgba(0, 0, 0, 0.1);
+    color: #fff;
+  }
+
+  #subtitle {
+    /* font-size: 24px; */
+    font-size: 1.5rem;
+    text-shadow: 8px 3px 4px rgba(0, 0, 0, 0.1);
+    color: #fff;
+  }
+
+  #caption {
+    font-size: 1rem;
+    margin-top: 2em;
+    border: 2px solid #fff;
+    padding: 0.25em 0.5em;
+    border-radius: 6px;
+    background-color: #333e48;
+    color: #fff;
+  }
+
+</style>
+<body>
+  <div id="splash-container">
+    <span id="first-row">
+      <img id="image" src="wifi-technology.avif" alt="Celestron Wifi Technology">
+      <div id="title">CELESTRON</div>
+    </span>
+    <span id="subtitle">Wifi Password Manager</span>
+    <div class="loader"></div>
+    <span id="caption">please wait while the tool loads...</span>
+  </div>
+</body>
+</html>

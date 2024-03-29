@@ -1,13 +1,6 @@
 const CopyPlugin = require("copy-webpack-plugin");
 const rules = require('./webpack.rules');
 
-/*
-rules.push({
-  test: /\.json$/,
-  loader: 'file-loader',
-});
-*/
-
 module.exports = {
   entry: './src/main.js',
   module: {
@@ -19,6 +12,9 @@ module.exports = {
       patterns: [
         "./public/celestron-small.jpg",
         "./public/celestron-small-light.png",
+        "./public/wifi-technology.avif",
+        "./public/wifi-technology.png",
+        "./src/splash.html"
       ]
     }),
   ],

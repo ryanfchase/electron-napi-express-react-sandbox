@@ -1,7 +1,7 @@
 .device-name-table {
   width: 100%;
   table-layout: fixed;
-  margin: 1em 0;
+  margin: 1em 4em 1em 0;
 }
 
 .device-icon {
@@ -17,7 +17,9 @@
   font-weight: bold;
   font-size: 2em;
   text-transform: uppercase;
-  text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+  text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.1);
+  margin: 1em 4em 1em 0;
+  white-space: nowrap;
 }
 
 .final-submit-section {

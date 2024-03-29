@@ -37,6 +37,7 @@ html, body {
   width: fit-content;
   padding: 0.3em 1em;
   letter-spacing: normal;
+  white-space: nowrap;
 /* rgb(51, 62, 72) */
 }
 
@@ -169,6 +170,7 @@ html, body {
 
 /* Icons and Backgrounds  */
 .celestron-icon-small {
+  border-radius: 8px;
   min-height: 2em;
   max-height: 4em;
 }
@@ -212,7 +214,8 @@ html, body {
   line-height: 1.5; /* Line height */
   white-space: pre-wrap; /* Preserve whitespace */
   max-height: 300px; /* Maximum height, adjust as needed */
-  width: 65%;
+  min-width: 65%;
+  max-width: fit-content;
   margin-left: 2em;
 }
 
@@ -221,7 +224,7 @@ html, body {
 }
 
 .pre-container::before {
-  content: "status: ";
+  content: "status:  ";
   display: block;
   font-weight: bold;
 }
