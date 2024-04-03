@@ -71,7 +71,7 @@ class Dialog extends Component {
         ref={this.modalRef}
         onKeyDown={this.handleKeyDown}
       >
-        <div className="inner-container">
+        <div className="dialog-inner-container">
           {this.props.children}
           <div className="button-container">
             {this.props.confirmButtonText && (

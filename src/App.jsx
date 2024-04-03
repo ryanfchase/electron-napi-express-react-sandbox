@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import wifiTechnology from "../public/wifi-technology.avif";
-import Warning from "./components/svg/Warning";
 import InfoSvg from "./components/svg/InfoSvg";
 import loadingGif from "../public/loading.gif";
-import Banner from "../public/celestron-big.webp"
 import axios from './api';
 import DeviceManager from "./components/DeviceManager";
 import TroubleshootingPage from "./components/TroubleshootingPage";
 import ReadyPage from "./components/ReadyPage";
 import Dialog from "./components/Dialog";
+import InfoPage from "./components/InfoPage";
 
 const { ipcRenderer } = window.require('electron');
 
@@ -114,7 +113,7 @@ function App() {
     }
     else {
       console.log('configured module successfully', res);
-      setStatusMessage('MODULE CONFIGURED');
+      setStatusMessage('MODULE CONFIGURED. TOGGLE THE MODE SELECT SWITCH ON YOUR DEVICE');
       setStatus('success');
     }
   }
@@ -364,75 +363,11 @@ function App() {
         hasCloseListeners={true}
         onClose={() => setModalOpen(false)}
       >
-        <div>
-          <div className="dialog-header">
-            <span>About This Application</span>
-            <span className="dialog-close-button" onClick={() => setModalOpen(false)}>X</span>
-          </div>
-          <hr></hr>
-          <div className="dialog-banner" >
-            <img src={Banner} alt="celestron-banner"/>
-          </div>
-          <div className="dialog-contents-container">
-            <p>The Celestron Wifi Password Manager is a tool that lets you configure network settings for your Celestron wifi accessories and wifi-enabled telescopes. Configurations include: </p>
-            <ul className="dialog-list">
-              <li>Network SSID and password for wifi module WLAN mode</li>
-              <li>Direct connect password for secure direct connect mode</li>
-            </ul>
-            <div className="dialog-warning">
-              <Warning style={{marginRight: "8px", paddingLeft: "1em", overflow: "visible" }}size={24} fill={"#d29922"} />
-              <span>At this moment, we require you to upgrade your wifi module to the latest firmware available firmware. Please be sure to download it <a href="#" onClick={(e) => e.preventDefault}>here</a> and install via CFM</span>
-            </div>
-            <br/>
-            <p>How To Use</p>
-            <hr></hr>
-            <p>Clicking "Seek Devices" will search for an available wifi module. Please make sure your wifi module is accessible in the following ways:</p>
-            <ul className="dialog-list">
-              <li>Your wifi module is set to Direct Connect mode, and you are connected to the ad-hoc network (e.g. Celestron-###)</li>
-              <li>Your wifi module is in WLAN mode, and it is properly configured to a known network</li>
-            </ul>
-            <p>You will then be prompted to input the wifi module's configurations (the module SSID cannot be changed). When your configurations are sent, the module will reboot, and your changes will have taken place.</p>
-            <p>For further informations, refer to the manuals for the <a href="#" onClick={handleSkyportalLinkClick} target="_blank">SkyPortal</a> and <a href="#" onClick={handleEvolutionLinkClick} target="_blank">Evolution Mount</a> wifi modules.</p>
-            <br/>
-            <p>Frequently Asked Questions</p>
-            <hr></hr>
-            {
-              [
-                // {
-                //   title: "How will I know my configurations worked?",
-                //   answer: "Check for `MODULE CONFIGURED` in the status bar. If there were any invalid fields when you click \"Send Configurations\" (e.g. password too short), you will be prevented from attempting to configure the module.",
-                // },
-                // {
-                //   title: "I've set my Direct Connect password, now what?",
-                //   answer: "Sending configurations will reset the wifi module. Find your wifi module in the available networks and attempt to connect to it. Don't forget to write down your password!",
-                // },
-                {
-                  title: "I've forgotten my Direct Connect password",
-                  answer: "Follow the instructions for resetting your wifi module in the manual (links above). Resetting the module will clear the password, and you should be able to connect without needing your old password."
-                },
-                {
-                  title: "Why is the Direct Connect password field is disabled?",
-                  answer: "Some wifi modules do not allow you to clear or reset the password once it has been set. In order to avoid locking you out of your device, we are preventing users from setting a module direct connect password."
-                },
-                {
-                  title: "Toggling from WLAN to Direct Connect is disabling my password",
-                  answer: "You need the latest wifi module firmware in order to set the password properly. Please see instructions above to obtain this update.",
-                },
-                {
-                  title: "My Direct Connect network appears as \"Celestron-### 2\" in my available networks",
-                  answer: "This is a known issue that we are trying to work around. Windows is recognizing your wifi module's newly secured network as a different network. Connecting to this \"Celestron-### 2\" should work as if you were connected to \"Celestron-###\"",
-                }
-              ].map(question => (
-                <details key={question.title} tabIndex={-1}>
-                  <summary>{question.title}</summary>
-                  <div className="faq-answer-container">
-                    {question.answer}
-                  </div>
-                </details>
-              ))
-            }
-          </div>
-        </div>
+        <InfoPage
+          handleClose={() => setModalOpen(false)}
+          handleSkyportalLinkClick={handleSkyportalLinkClick}
+          handleEvolutionLinkClick={handleEvolutionLinkClick}
+         />
       </Dialog>
       <div id="navbar" className="celestron-background">
         <div className="navbar-item">

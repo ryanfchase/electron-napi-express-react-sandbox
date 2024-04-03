@@ -1,6 +1,6 @@
 dialog {
   border: 3px solid black;
-  max-width: 30em;
+  max-width: 80%;
   border-radius: 0.5em;
   color: #707070;
   box-shadow: 1px 1px 10px 1px rgba(0,0,0,.8);
@@ -8,67 +8,7 @@ dialog {
   max-height: 80%;
 }
 
-summary {
-  user-select: none;
-}
-
-details {
-  margin-bottom: 0.75em;
-}
-
-.dialog-list li {
-  margin-bottom: 1em;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-}
-
-.dialog-close-button {
-  user-select: none;
-  cursor: pointer;
-  border-radius: 8px;
-  background-color: #fff;
-  padding: 0.25em;
-}
-
-.dialog-close-button:hover {
-  background-color: rgb(112, 112, 112, 0.4)
-}
-
-.dialog-contents-container {
-}
-
-.dialog-banner {
-  max-width: 100%;
-  overflow: hidden;
-  height: 8em;
-}
-
-.dialog-banner img {
-}
-
-.dialog-warning {
-  border-color: hsl(40.11deg 90.82% 38.43% / 40%);
-  background-color: rgba(187, 128, 9, 0.15);
-  padding: 1.5em 0;
-  display: flex;
-  justify-content: flex-start;
-  border-radius: 0.25em;
-  align-items: center;
-}
-
-.dialog-text {
-  padding: 1.5em 0;
-  margin: 0 1em;
-}
-
-.faq-answer-container {
-  margin-top: 1em;
-}
-
-.inner-container {
+.dialog-inner-container {
   display: flex;
   flex-direction: column;
 }

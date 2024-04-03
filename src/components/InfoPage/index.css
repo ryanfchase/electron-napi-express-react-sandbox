@@ -1,0 +1,96 @@
+summary {
+  user-select: none;
+}
+
+details {
+  margin-bottom: 0.75em;
+}
+
+.dialog-list li {
+  margin-bottom: 1em;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.dialog-close-button {
+  user-select: none;
+  cursor: pointer;
+  border-radius: 8px;
+  background-color: #fff;
+  padding: 0.25em;
+}
+
+.dialog-close-button:hover {
+  background-color: rgb(112, 112, 112, 0.4)
+}
+
+.dialog-contents-container {
+  max-width: 56em;
+}
+
+#first-content b {
+  border-bottom: 4px solid #fd8204;
+}
+
+.dialog-contents {
+  border-left: 4px solid #fd8204;
+  padding-left: 0.25em;
+  padding-right: 2em;
+  margin: 1em 0;
+  /* padding: 0.5em 0 0.5em 0.25em; */
+}
+
+.dialog-contents p {
+  line-height: 1.5em;
+  margin: 0.25em 0.5em;
+}
+
+.dialog-banner {
+  max-width: 100%;
+  overflow: hidden;
+  height: 8em;
+}
+
+.dialog-banner img { }
+
+.dialog-list li code {
+  font-weight: bold;
+  background-color: bisque;
+  font-size: large;
+}
+
+.dialog-warning {
+  border-color: hsl(40.11deg 90.82% 38.43% / 40%);
+  background-color: rgba(187, 128, 9, 0.15);
+  padding: 1.5em 0;
+  display: flex;
+  justify-content: flex-start;
+  border-radius: 0.25em;
+  align-items: center;
+}
+
+.dialog-warning > span {
+  padding-right: 2em;
+}
+
+.dialog-text {
+  padding: 1.5em 0;
+  margin: 0 1em;
+}
+
+.faq-answer-container {
+  margin-top: 1em;
+}
+
+.dialog-inner-container {
+  display: flex;
+  flex-direction: column;
+}
+
+dialog::backdrop {
+  background: rgb(99 110 122 / 20%); /* from github's delete repo overlay */
+}
+
