@@ -11,6 +11,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         "./public/celestron-small.jpg",
+        "./public/celestron.ico",
         "./public/celestron-small-light.png",
         "./public/wifi-technology.avif",
         "./public/wifi-technology.png",

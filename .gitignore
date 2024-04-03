@@ -96,3 +96,6 @@ build/
 
 # Bin
 bin/
+
+# User Settings
+config/user-data.json

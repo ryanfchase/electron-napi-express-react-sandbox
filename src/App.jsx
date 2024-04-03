@@ -126,6 +126,10 @@ function App() {
     e.preventDefault();
     ipcRenderer.send('open-evolution-manual');
   }
+  const handleCfmLinkClick = (e) => {
+    e.preventDefault();
+    ipcRenderer.send('open-cfm-download');
+  }
 
   // grabs the last 2 segments of mac address and uses the last 3 digits
   const macAddressToModuleName = (mac) => mac.split(':').slice(-2).join('').slice(-3);
@@ -367,6 +371,7 @@ function App() {
           handleClose={() => setModalOpen(false)}
           handleSkyportalLinkClick={handleSkyportalLinkClick}
           handleEvolutionLinkClick={handleEvolutionLinkClick}
+          handleCfmLinkClick={handleCfmLinkClick}
          />
       </Dialog>
       <div id="navbar" className="celestron-background">

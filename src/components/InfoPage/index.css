@@ -56,7 +56,7 @@ details {
 
 .dialog-banner img { }
 
-.dialog-list li code {
+dialog code {
   font-weight: bold;
   background-color: bisque;
   font-size: large;
