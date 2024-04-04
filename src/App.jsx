@@ -9,8 +9,7 @@ import TroubleshootingPage from "./components/TroubleshootingPage";
 import ReadyPage from "./components/ReadyPage";
 import Dialog from "./components/Dialog";
 import InfoPage from "./components/InfoPage";
-
-const { ipcRenderer } = window.require('electron');
+import { signalReactReady } from "./util/ipc.js";
 
 const testObject = [
   {
@@ -64,8 +63,8 @@ function App() {
   const seekDeviceButtonRef = useRef(null);
 
   useEffect(() => {
-    // handleSeekDevices(); // uncomment to launch app with seek device call
-    ipcRenderer.send('react-ready');
+    // this lifecycle hook runs when components have mounted, signal main to close splash page
+    signalReactReady();
   }, []);
 
   const handleFinalSubmit = async () => {
@@ -116,19 +115,6 @@ function App() {
       setStatusMessage('MODULE CONFIGURED. TOGGLE THE MODE SELECT SWITCH ON YOUR DEVICE');
       setStatus('success');
     }
-  }
-
-  const handleSkyportalLinkClick = (e) => {
-    e.preventDefault();
-    ipcRenderer.send('open-skyportal-manual');
-  }
-  const handleEvolutionLinkClick = (e) => {
-    e.preventDefault();
-    ipcRenderer.send('open-evolution-manual');
-  }
-  const handleCfmLinkClick = (e) => {
-    e.preventDefault();
-    ipcRenderer.send('open-cfm-download');
   }
 
   // grabs the last 2 segments of mac address and uses the last 3 digits
@@ -367,12 +353,7 @@ function App() {
         hasCloseListeners={true}
         onClose={() => setModalOpen(false)}
       >
-        <InfoPage
-          handleClose={() => setModalOpen(false)}
-          handleSkyportalLinkClick={handleSkyportalLinkClick}
-          handleEvolutionLinkClick={handleEvolutionLinkClick}
-          handleCfmLinkClick={handleCfmLinkClick}
-         />
+        <InfoPage handleClose={() => setModalOpen(false)} />
       </Dialog>
       <div id="navbar" className="celestron-background">
         <div className="navbar-item">

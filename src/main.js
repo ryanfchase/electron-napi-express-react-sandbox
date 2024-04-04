@@ -58,8 +58,10 @@ const createWindow = () => {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       // there is a way to avoid doing this, but this is the fast way
       // to integrate ipcRenderer into the frontend code (not exclusively a React problem)
-      nodeIntegration: true,
-      contextIsolation: false,
+      // nodeIntegration: true,
+      // contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
     },
   });
 
@@ -84,6 +86,14 @@ const createWindow = () => {
 
   splashScreen.loadFile(path.join(__dirname, "./splash.html"));
   splashScreen.center();
+
+  // because our ipcMain isn't working, we'll use this temporarily
+  // setTimeout(() => {
+  //     mainWindow.center();
+  //     mainWindow.show();
+  //     splashScreen.close();
+  //     splashScreen = null;
+  // }, 5000);
 };
 
 // This method will be called when Electron has finished
@@ -114,7 +124,7 @@ app.on('activate', () => {
 // IPC Methods
 ipcMain.on('react-ready', (event, arg) => {
   if (splashScreen) {
-    // there must be a better way
+    // add a short timeout in case it was loaded really fast
     setTimeout(() => {
       mainWindow.center();
       mainWindow.show();
@@ -124,15 +134,6 @@ ipcMain.on('react-ready', (event, arg) => {
   }
 })
 
-const skyPortalManualUrl = "https://celestron-site-support-files.s3.amazonaws.com/support_files/93973_Celestron%20SkyPortal%20WiFi%20Accessory_Manual_5LANG_Web.pdf";
-const evolutionManualUrl = "https://s3.amazonaws.com/celestron-site-support-files/support_files/CELESTRON_NexStarEVOLUTION_Manual.pdf";
-const cfmDownloadUrl = "https://www.celestron.com/pages/drivers-and-software";
-ipcMain.on('open-skyportal-manual', (event, arg) => {
-  shell.openExternal(skyPortalManualUrl);
-})
-ipcMain.on('open-evolution-manual', (event, arg) => {
-  shell.openExternal(evolutionManualUrl);
-})
-ipcMain.on('open-cfm-download', (event, arg) => {
-  shell.openExternal(cfmDownloadUrl);
+ipcMain.on('open-url', (event, arg) => {
+  shell.openExternal(arg);
 })

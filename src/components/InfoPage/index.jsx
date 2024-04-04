@@ -2,9 +2,10 @@ import React from "react";
 import Banner from "../../../public/celestron-big.webp"
 import Warning from "../../components/svg/Warning";
 import questions from "./questions";
+import { openCfmLink, openEvolutionLink, openSkyPortalLink } from "../../util/ipc";
 import "./index.css";
 
-const InfoPage = ({handleClose, handleSkyportalLinkClick, handleEvolutionLinkClick, handleCfmLinkClick}) => {
+const InfoPage = ({handleClose}) => {
   return(
     <>
       <div className="dialog-header">
@@ -27,7 +28,7 @@ const InfoPage = ({handleClose, handleSkyportalLinkClick, handleEvolutionLinkCli
         </div>
         <div className="dialog-warning">
           <Warning style={{marginRight: "8px", paddingLeft: "1em", overflow: "visible" }}size={24} fill={"#d29922"} />
-          <span>Secure direct connect mode is a newly released feature, it may require a firmware update in order to work properly. You can update your firmware with CFM, which can be downloaded <a href="#" target="_blank" onClick={handleCfmLinkClick}>here</a>.</span>
+          <span>Secure direct connect mode is a newly released feature, it may require a firmware update in order to work properly. You can update your firmware with CFM, which can be downloaded <a href="#" target="_blank" onClick={openCfmLink}>here</a>.</span>
         </div>
         <br/>
         <p>How To Use</p>
@@ -47,12 +48,12 @@ const InfoPage = ({handleClose, handleSkyportalLinkClick, handleEvolutionLinkCli
           <p>3. Click <b>Send Configuration</b></p>
           <p>4. Toggle the <b>Mode Select Switch</b> on your device.</p>
         </div>
-        <p>For further information, refer to the manual for the <a href="#" onClick={handleSkyportalLinkClick} target="_blank">SkyPortal</a> and <a href="#" onClick={handleEvolutionLinkClick} target="_blank">Evolution Mount</a> wifi modules.</p>
+        <p>For further information, refer to the manual for the <a href="#" onClick={openSkyPortalLink} target="_blank">SkyPortal</a> and <a href="#" onClick={openEvolutionLink} target="_blank">Evolution Mount</a> wifi modules.</p>
         <br/>
         <p>Frequently Asked Questions</p>
         <hr></hr>
         {
-          questions(handleCfmLinkClick).map(question => (
+          questions.map(question => (
             <details key={question.title} tabIndex={-1}>
               <summary>{question.title}</summary>
               <div className="dialog-contents">

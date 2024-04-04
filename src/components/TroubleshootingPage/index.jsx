@@ -1,19 +1,8 @@
 import React from "react";
 import "./index.css";
 import noConnection from "../../../public/no-connection.webp";
-const { ipcRenderer } = window.require('electron');
-
-
 
 const TroubleshootingPage = () => {
-  const handleSkyportalLinkClick = (e) => {
-    e.preventDefault();
-    ipcRenderer.send('open-skyportal-manual');
-  }
-  const handleEvolutionLinkClick = (e) => {
-    e.preventDefault();
-    ipcRenderer.send('open-evolution-manual');
-  }
 
   return(
     <div>
