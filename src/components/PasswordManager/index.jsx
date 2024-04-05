@@ -11,6 +11,7 @@ import InfoPage from "../InfoPage";
 import { signalReactReady } from "../../util/ipc";
 import seekDevices from "./seekDevices";
 import { verifyRefs, sendConfiguration } from "./sendConfiguration";
+import { STATUSES, STATUS_MESSAGES } from "./constants";
 
 function PasswordManager() {
   const [networkName, setNetworkName] = useState('');
@@ -30,43 +31,16 @@ function PasswordManager() {
   const modulePassphraseRef = useRef(null);
   const seekDeviceButtonRef = useRef(null);
 
-  const DIRECT_CONNECT_IP = '1.2.3.4';
-  const statusMessages = {
-    seekingDevices: 'SEEKING DEVICES',
-    attemptingLastIp: 'ATTEMPTING TO CONNECT ON LAST KNOWN IP ADDRESS',
-    attemptingDirectConnect: 'ATTEMPTING TO CONNECT VIA DIRECT CONNECT',
-    attemptingBroadcast: 'ATTEMPTING TO FIND DEVICES ON THE NETWORK',
-    attemptingWlan: 'BROADCAST SIGNAL FOUND, ATTEMPTING TO CONNECT',
-    unableToFindBroadcast: 'UNABLE TO FIND WIFI MODULES ON WLAN',
-    unableToConnectWlan: 'UNABLE TO CONNECT TO MODULES ON WLAN',
-    moduleFound: 'MODULE FOUND',
-    fatalError: 'FATAL ERROR. PLEASE RESTART APPLICATION',
-  };
-  const statuses = {
-    success: 'success',
-    error: 'error',
-  };
-
-  const controlFlows = {
-    LOAD_LAST_ADDRESS: 0,
-    CONN_LAST_ADDRESS: 1,
-    CONN_DIRECT_CONNECT: 2,
-    CONN_BROADCAST: 3,
-    CONN_WLAN: 4,
-    MODULE_FOUND: 5,
-    MODULE_NOT_FOUND: 6,
-  }
-
   useEffect(() => {
     // this lifecycle hook runs when components have mounted, signal main to close splash page
     signalReactReady();
   }, []);
 
   const handleFinalSubmit = async () => {
-
     setStatus('')
     setStatusMessage('SENDING CONFIGURATIONS');
 
+    // validate all refs to ensure the values are ready to be sent for configuration
     await verifyRefs(
       networkSsidRef,
       networkPassphraseRef,
@@ -75,7 +49,7 @@ function PasswordManager() {
       setStatusMessage
     );
 
-
+    // send the values of all inputs to our api calls for configuration
     await sendConfiguration(
       networkSsidRef,
       networkPassphraseRef,
@@ -83,7 +57,6 @@ function PasswordManager() {
       setStatus,
       setStatusMessage
     );
-
   }
 
   // grabs the last 2 segments of mac address and uses the last 3 digits
@@ -95,7 +68,7 @@ function PasswordManager() {
     setDeviceFound(false);
     setIdle(false);
     setStatus('');
-    setStatusMessage(statusMessages.seekingDevices);
+    setStatusMessage(STATUS_MESSAGES.seekingDevices);
 
     // disable the seek device button while we are seeking
     if (seekDeviceButtonRef.current) {
@@ -109,8 +82,8 @@ function PasswordManager() {
       setNetworkPassphrase(data.networkPassphrase);
       setModuleName(`Celestron-${macAddressToModuleName(data.macAddress)}`);
       setModulePassphrase(data.modulePassphrase);
-      setStatus(statuses.success);
-      setStatusMessage(statusMessages.moduleFound);
+      setStatus(STATUSES.success);
+      setStatusMessage(STATUS_MESSAGES.moduleFound);
       setDeviceFound(true);
 
       // check to see if we can modify passphrase (e.g. AMW007)

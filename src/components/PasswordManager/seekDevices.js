@@ -1,129 +1,103 @@
-  import connectionHelper from "../../util/connectionHelper";
+import connectionHelper from "../../util/connectionHelper";
+import { DIRECT_CONNECT_IP, STATUS_MESSAGES, STATUSES, CONTROL_FLOWS } from "./constants";
 
-  const DIRECT_CONNECT_IP = '1.2.3.4';
-  const statusMessages = {
-    seekingDevices: 'SEEKING DEVICES',
-    attemptingLastIp: 'ATTEMPTING TO CONNECT ON LAST KNOWN IP ADDRESS',
-    attemptingDirectConnect: 'ATTEMPTING TO CONNECT VIA DIRECT CONNECT',
-    attemptingBroadcast: 'ATTEMPTING TO FIND DEVICES ON THE NETWORK',
-    attemptingWlan: 'BROADCAST SIGNAL FOUND, ATTEMPTING TO CONNECT',
-    unableToFindBroadcast: 'UNABLE TO FIND WIFI MODULES ON WLAN',
-    unableToConnectWlan: 'UNABLE TO CONNECT TO MODULES ON WLAN',
-    moduleFound: 'MODULE FOUND',
-    fatalError: 'FATAL ERROR. PLEASE RESTART APPLICATION',
-  };
-  const statuses = {
-    success: 'success',
-    error: 'error',
-  };
-
-  const controlFlows = {
-    LOAD_LAST_ADDRESS: 0,
-    CONN_LAST_ADDRESS: 1,
-    CONN_DIRECT_CONNECT: 2,
-    CONN_BROADCAST: 3,
-    CONN_WLAN: 4,
-    MODULE_FOUND: 5,
-    MODULE_NOT_FOUND: 6,
-  }
 const seekDevices = async (setStatus, setStatusMessage, setModule) => {
-    let controlFlowState = controlFlows['LOAD_LAST_ADDRESS'];
+    let controlFlowState = CONTROL_FLOWS['LOAD_LAST_ADDRESS'];
 
+    // reusable variables for responses to connectionHelper
     let error, data, lastAddress, broadcastAddress;
     let shouldContinue = true;
     while (shouldContinue) {
       try {
         switch(controlFlowState) {
 
-          case controlFlows['LOAD_LAST_ADDRESS']:
+          case CONTROL_FLOWS['LOAD_LAST_ADDRESS']:
             // attempt to load last ip address from file
             ({ error, lastAddress} = await connectionHelper.getLastAddress());
             
             if (error || lastAddress === DIRECT_CONNECT_IP) {
-              controlFlowState = controlFlows['CONN_DIRECT_CONNECT'];
+              controlFlowState = CONTROL_FLOWS['CONN_DIRECT_CONNECT'];
             }
             else {
-              controlFlowState = controlFlows['CONN_LAST_ADDRESS'];
+              controlFlowState = CONTROL_FLOWS['CONN_LAST_ADDRESS'];
             }
             break;
-          case controlFlows['CONN_LAST_ADDRESS']:
+          case CONTROL_FLOWS['CONN_LAST_ADDRESS']:
             // attempt to connect on the last known ip address
             if (lastAddress && lastAddress !== '') {
-              setStatusMessage(statusMessages.attemptingLastIp);
+              setStatusMessage(STATUS_MESSAGES.attemptingLastIp);
               ({ error, data } = await connectionHelper.attemptConnect(lastAddress, 3000)); // consider additionally checking port 2000
 
               if (error) {
-                controlFlowState = controlFlows['CONN_DIRECT_CONNECT'];
+                controlFlowState = CONTROL_FLOWS['CONN_DIRECT_CONNECT'];
               }
               else {
-                controlFlowState = controlFlows['MODULE_FOUND'];
+                controlFlowState = CONTROL_FLOWS['MODULE_FOUND'];
               }
             }
             break;
-          case controlFlows['CONN_DIRECT_CONNECT']:
+          case CONTROL_FLOWS['CONN_DIRECT_CONNECT']:
             // attempt to connect via 1.2.3.4 (we previously confirmed last ip was not 1.2.3.4)
-            setStatusMessage(statusMessages.attemptingDirectConnect);
+            setStatusMessage(STATUS_MESSAGES.attemptingDirectConnect);
             ({ error, data } = await connectionHelper.attemptConnect(DIRECT_CONNECT_IP, 3000));
 
             if (error) {
-              controlFlowState = controlFlows['CONN_BROADCAST'];
+              controlFlowState = CONTROL_FLOWS['CONN_BROADCAST'];
             }
             else {
-              controlFlowState = controlFlows['MODULE_FOUND'];
+              controlFlowState = CONTROL_FLOWS['MODULE_FOUND'];
             }
             break;
-          case controlFlows['CONN_BROADCAST']:
-            setStatusMessage(statusMessages.attemptingBroadcast);
+          case CONTROL_FLOWS['CONN_BROADCAST']:
+            setStatusMessage(STATUS_MESSAGES.attemptingBroadcast);
             ({ error, broadcastAddress} = await connectionHelper.listenBroadcast());
 
             if (error) {
-              setStatus(statuses.error);
-              setStatusMessage(statusMessages.unableToFindBroadcast);
-              shouldContinue = false;
+              setStatus(STATUSES.error);
+              setStatusMessage(STATUS_MESSAGES.unableToFindBroadcast);
+              controlFlowState = CONTROL_FLOWS['MODULE_NOT_FOUND'];
             }
             else {
-              controlFlowState = controlFlows['CONN_WLAN'];
+              controlFlowState = CONTROL_FLOWS['CONN_WLAN'];
             }
             break;
-          case controlFlows['CONN_WLAN']:
+          case CONTROL_FLOWS['CONN_WLAN']:
             if (broadcastAddress && broadcastAddress !== '') {
-              setStatusMessage(statusMessages.attemptingWlan);
+              setStatusMessage(STATUS_MESSAGES.attemptingWlan);
               ({ error, data } = await connectionHelper.attemptConnect(broadcastAddress, 3000));
 
               if (error) {
-                setStatus(statuses.error);
-                setStatusMessage(statusMessages.unableToConnectWlan);
-                shouldContinue = false;
+                setStatus(STATUSES.error);
+                setStatusMessage(STATUS_MESSAGES.unableToConnectWlan);
+                controlFlowState = CONTROL_FLOWS['MODULE_NOT_FOUND'];
               }
               else {
                 await connectionHelper.updateLastAddress(broadcastAddress);
-                controlFlowState = controlFlows['MODULE_FOUND'];
+                controlFlowState = CONTROL_FLOWS['MODULE_FOUND'];
               }
             }
             break;
-          case controlFlows['MODULE_FOUND']:
+          case CONTROL_FLOWS['MODULE_FOUND']:
             if (data) {
               setModule(data);
             }
-
             shouldContinue = false;
             break;
-          case controlFlows['MODULE_NOT_FOUND']:
+          case CONTROL_FLOWS['MODULE_NOT_FOUND']:
             shouldContinue = false;
             break;
           default:
             console.log("In SeekDevices while loop, arrived at a bad state: ", controlFlowState);
-            setStatusMessage(statusMessages.fatalError);
-            setStatus(statuses.error);
+            setStatusMessage(STATUS_MESSAGES.fatalError);
+            setStatus(STATUSES.error);
             shouldContinue = false;
             break;
         }
-        console.log("END OF SWITCH -- INSIDE WHILE: ", controlFlowState)
       }
       catch(error) {
         console.error(error);
-        setStatusMessage(statusMessages.fatalError);
-        setStatus(statuses.error);
+        setStatusMessage(STATUS_MESSAGES.fatalError);
+        setStatus(STATUSES.error);
         shouldContinue = false;
       }
     }

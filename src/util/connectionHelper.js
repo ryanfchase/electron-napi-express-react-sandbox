@@ -20,8 +20,10 @@ const getLastAddress = async () => {
   return { lastAddress: res.data.lastAddress };
 }
 
+// attempt to establish a TCP connection to a socket on the specified ip and port
+// Note: this api call does not actually establish the TCP connection, the backend
+// runs `try-tcp.js`, which also obtains wifi module device details
 const attemptConnect = async (ip, port) => {
-  // attempt to connect via that ip address
   const res = await api.get('/connect', {
     params: { ip, port }
   })
@@ -56,6 +58,10 @@ const attemptConnect = async (ip, port) => {
   }
 }
 
+// attempt to listen to UDP broadcast, returning connection details from the first
+// celestron wifi device.
+// Note: this api call does not actually listen to the broadcast, the backend will run
+// try-udp.js, this api call simply waits for the response from the backend
 const listenBroadcast = async () => {
   const res = await api.get('/broadcast');
   if (res.data.error) {
@@ -74,7 +80,6 @@ const listenBroadcast = async () => {
 }
 
 const updateLastAddress = async (ip) => {
-  // since we found an ip address, save it...
   const res = await api.post('/last-address', {
     address: ip,
   });
@@ -88,6 +93,10 @@ const updateLastAddress = async (ip) => {
   return { updateSuccess: true };
 }
 
+// attempt to establish a TCP connection to wifi module and update the specified
+// fields.
+// Note: this api call does not actually establish the TCP connection, the backend
+// runs `try-tcp.js`, which also configures the wifi module device
 const configureModule = async (ssid, passphrase, modulePassphrase) => {
   const res = await api.post('/configure', {
     networkSsid: ssid,
