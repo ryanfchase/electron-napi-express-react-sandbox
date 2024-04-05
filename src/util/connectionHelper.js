@@ -80,12 +80,34 @@ const updateLastAddress = async (ip) => {
   });
 
   if (res.data.error) {
-    console.log('post express/last-address error ', res.data.error);
+    console.log('updateLastAddress::encountered error while attempting to update', res.data.error);
+    return { error: res.data.error };
   }
 
-  else {
-    console.log('post express/last-address returns ', res.data);
-  }
+  console.log('updateLastAddress::operation success', res.data);
+  return { updateSuccess: true };
 }
 
-export default {getLastAddress, attemptConnect, listenBroadcast, updateLastAddress};
+const configureModule = async (ssid, passphrase, modulePassphrase) => {
+  const res = await api.post('/configure', {
+    networkSsid: ssid,
+    networkPassphrase: passphrase,
+    modulePassphrase: modulePassphrase,
+  });
+
+  if (res.data.error) {
+    console.log('configureModule:: error -- unable to configure module: ', res.data.error)
+    return { error: res.data.error };
+  }
+
+  console.log("configureModule::operation success: ", res.data);
+  return { configureSuccess: true };
+}
+
+export default {
+  getLastAddress,
+  attemptConnect,
+  listenBroadcast,
+  updateLastAddress,
+  configureModule
+};
