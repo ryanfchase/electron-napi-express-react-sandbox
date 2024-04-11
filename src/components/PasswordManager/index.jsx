@@ -111,6 +111,7 @@ function PasswordManager() {
     {
       formName: "direct connect",
       ssidRef: moduleSsidRef,
+      nameReadOnly: true,
       passphraseRef: modulePassphraseRef,
       defaultName: moduleName,
       defaultPassphrase: modulePassphrase,

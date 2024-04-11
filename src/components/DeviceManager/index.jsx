@@ -31,6 +31,7 @@ const DeviceManager = ({ moduleName, credentials, handleFinalSubmit }) => {
           ssidRef={table.ssidRef}
           passphraseRef={table.passphraseRef}
           defaultName={table.defaultName}
+          nameReadOnly={table.nameReadOnly}
           defaultPassphrase={table.defaultPassphrase}
           passphraseReadOnly={table.passphraseReadOnly}
         />
