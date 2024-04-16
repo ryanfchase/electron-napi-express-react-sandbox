@@ -31,11 +31,12 @@ function PasswordManager() {
   const modulePassphraseRef = useRef(null);
   const seekDeviceButtonRef = useRef(null);
 
+  // this lifecycle hook runs when components have mounted, signal main to close splash page
   useEffect(() => {
-    // this lifecycle hook runs when components have mounted, signal main to close splash page
     signalReactReady();
   }, []);
 
+  // runs when user clicks on 'Send Configurations'
   const handleFinalSubmit = async () => {
     setStatus('')
     setStatusMessage('SENDING CONFIGURATIONS');

@@ -51,7 +51,9 @@ export const sendConfiguration = async (
     );
 
     if (error) {
-      console.log('unable to configure the module: ', res.data.error);
+      console.log('unable to configure the module: ', error);
+      setStatusMessage('ERROR WHILE SENDING CONFIGURATIONS. PLEASE RESTART THE APPLICATION.');
+      setStatus('error');
     }
     else {
       console.log('configured module successfully', configureSuccess);

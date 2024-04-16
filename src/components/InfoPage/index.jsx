@@ -46,7 +46,7 @@ const InfoPage = ({handleClose}) => {
           <p>1. Clicking <b>Seek Devices</b> will search for an available wifi module.</p>
           <p>2. Enter your network credentials</p>
           <p>3. Click <b>Send Configuration</b></p>
-          <p>4. Toggle the <b>Mode Select Switch</b> on your device.</p>
+          <p>4. Toggle the <b>Mode Select Switch</b> on your device to WLAN mode, then toggle it back to Direct Connect mode. Alternatively, power cycle the wifi module. Be sure to leave a few moments for your computer to detect that the Direct Connect network has been modified.</p>
         </div>
         <p>For further information, refer to the manual for the <a href="#" onClick={openSkyPortalLink} target="_blank">SkyPortal</a> and <a href="#" onClick={openEvolutionLink} target="_blank">Evolution Mount</a> wifi modules.</p>
         <br/>
